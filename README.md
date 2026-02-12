@@ -1,2 +1,2 @@
-# Ully--coffee
-AI-powered diagnostic tool for coffee equipment professionals. Computer vision + expert knowledge to troubleshoot machines, identify parts, and optimize performance.
+# Ully-coffee
+Professional-grade diagnostic assistant for coffee equipment technicians, café owners, and baristas. Uses AI and computer vision to diagnose issues, identify parts, recommend fixes, and connect you with the right resources.
