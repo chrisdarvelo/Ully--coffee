@@ -14,6 +14,7 @@ import CoffeeFlower from '../components/CoffeeFlower';
 
 export default function SettingsScreen() {
   const user = auth.currentUser;
+  const name = user?.email ? user.email.split('@')[0] : 'User';
   const [loading, setLoading] = useState(false);
 
   const handleSignOut = async () => {
@@ -55,21 +56,50 @@ export default function SettingsScreen() {
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {(user?.email?.charAt(0) || 'U').toUpperCase()}
+            {name.charAt(0).toUpperCase()}
           </Text>
         </View>
+        <Text style={styles.name}>{name}</Text>
         <Text style={styles.email}>{user?.email || 'Unknown'}</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
+        <Text style={styles.sectionTitle}>Settings</Text>
+
         <TouchableOpacity
           style={styles.row}
           onPress={handlePasswordReset}
           activeOpacity={0.7}
         >
-          <Text style={styles.rowText}>Reset Password</Text>
-          <Text style={styles.rowHint}>Sends link to email</Text>
+          <Text style={styles.rowIcon}>🔑</Text>
+          <View style={styles.rowBody}>
+            <Text style={styles.rowText}>Reset Password</Text>
+            <Text style={styles.rowHint}>Sends a reset link to your email</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.row}
+          activeOpacity={0.7}
+          disabled
+        >
+          <Text style={styles.rowIcon}>🔔</Text>
+          <View style={styles.rowBody}>
+            <Text style={styles.rowText}>Notifications</Text>
+            <Text style={styles.rowHint}>Coming soon</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.row}
+          activeOpacity={0.7}
+          disabled
+        >
+          <Text style={styles.rowIcon}>📐</Text>
+          <View style={styles.rowBody}>
+            <Text style={styles.rowText}>Units & Preferences</Text>
+            <Text style={styles.rowHint}>Coming soon</Text>
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -106,28 +136,35 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingTop: 64,
+    paddingBottom: 24,
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: Colors.text,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   avatarText: {
     color: Colors.background,
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
     fontFamily: Fonts.mono,
   },
+  name: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+  },
   email: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontFamily: Fonts.mono,
+    marginTop: 4,
   },
   section: {
     paddingHorizontal: 24,
@@ -147,6 +184,16 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: Colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  rowIcon: {
+    fontSize: 20,
+    marginRight: 14,
+  },
+  rowBody: {
+    flex: 1,
   },
   rowText: {
     fontSize: 15,
@@ -158,7 +205,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     fontFamily: Fonts.mono,
-    marginTop: 3,
+    marginTop: 2,
   },
   signOutRow: {
     backgroundColor: Colors.card,

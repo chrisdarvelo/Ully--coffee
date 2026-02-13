@@ -39,20 +39,24 @@ function AuthNavigator() {
 }
 
 function TabIcon({ label, focused }) {
-  const icons = {
-    Home: '⌂',
-    Troubleshoot: '⚒',
-    Settings: '⚙',
-  };
-
   if (label === 'AI') {
-    return <CoffeeFlower size={22} />;
+    return (
+      <View style={{ transform: [{ scale: focused ? 1.2 : 1 }] }}>
+        <CoffeeFlower size={24} />
+      </View>
+    );
   }
+
+  const icons = {
+    Home: '🏠',
+    Troubleshoot: '🔧',
+    Profile: '👤',
+  };
 
   return (
     <Text style={{
-      fontSize: 20,
-      color: focused ? Colors.text : Colors.tabInactive,
+      fontSize: 24,
+      transform: [{ scale: focused ? 1.2 : 1 }],
     }}>
       {icons[label]}
     </Text>
@@ -64,28 +68,22 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarIcon: ({ focused }) => (
           <TabIcon label={route.name} focused={focused} />
         ),
-        tabBarActiveTintColor: Colors.text,
-        tabBarInactiveTintColor: Colors.tabInactive,
         tabBarStyle: {
           backgroundColor: Colors.tabBar,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          paddingTop: 6,
-          height: 85,
-        },
-        tabBarLabelStyle: {
-          fontFamily: Fonts.mono,
-          fontSize: 10,
-          marginTop: 2,
+          paddingTop: 10,
+          height: 80,
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Troubleshoot" component={TroubleshootScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Profile" component={SettingsScreen} />
       <Tab.Screen name="AI" component={AIScreen} />
     </Tab.Navigator>
   );
