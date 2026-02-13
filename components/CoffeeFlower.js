@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, View, StyleSheet } from 'react-native';
 import Svg, { Ellipse, Circle } from 'react-native-svg';
 
-export default function CoffeeFlower({ size = 150, spinning = false }) {
+export default function CoffeeFlower({ size = 150, spinning = false, bold = false }) {
   const breathAnim = useRef(new Animated.Value(1)).current;
   const spinAnim = useRef(new Animated.Value(0)).current;
 
@@ -73,9 +73,9 @@ export default function CoffeeFlower({ size = 150, spinning = false }) {
               cy={center - petalOffset}
               rx={petalRx}
               ry={petalRy}
-              fill="#FAF5F0"
-              stroke="#E8DDD4"
-              strokeWidth={1}
+              fill={bold ? '#FAF5F0' : '#FAF5F0'}
+              stroke={bold ? '#B8A898' : '#E8DDD4'}
+              strokeWidth={bold ? 1.8 : 1}
               transform={`rotate(${angle}, ${center}, ${center})`}
               opacity={0.92}
             />

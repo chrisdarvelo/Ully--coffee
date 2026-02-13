@@ -16,6 +16,7 @@ import { auth } from '../services/FirebaseConfig';
 import ClaudeService from '../services/ClaudeService';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
+import PaperBackground from '../components/PaperBackground';
 
 function MicIcon({ color, size }) {
   return (
@@ -74,17 +75,18 @@ export default function AIScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={80}
-      >
-        {loading ? (
-          <View style={[styles.fill, styles.centered]}>
-            <CoffeeFlower size={80} spinning />
-            <Text style={styles.brewingText}>Brewing...</Text>
-          </View>
+    <PaperBackground>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={80}
+        >
+          {loading ? (
+            <View style={[styles.fill, styles.centered]}>
+              <CoffeeFlower size={80} spinning bold />
+              <Text style={styles.brewingText}>Brewing...</Text>
+            </View>
         ) : response ? (
           <View style={styles.fill}>
             <ScrollView
@@ -123,7 +125,7 @@ export default function AIScreen() {
           </View>
         ) : (
           <View style={[styles.fill, styles.centered]}>
-            <CoffeeFlower size={48} spinning={listening} />
+            <CoffeeFlower size={64} spinning={listening} bold />
             <Text style={styles.greeting}>Hello {name},</Text>
             <Text style={styles.subGreeting}>how can I help?</Text>
 
@@ -154,15 +156,15 @@ export default function AIScreen() {
             </View>
           </View>
         )}
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </PaperBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   fill: {
     flex: 1,
