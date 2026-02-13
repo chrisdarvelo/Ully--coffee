@@ -45,6 +45,15 @@ export default {
             'Ully Coffee needs photo library access to analyze existing photos of equipment.',
         },
       ],
+      [
+        'expo-speech-recognition',
+        {
+          microphonePermission:
+            'Ully Coffee needs microphone access for voice input.',
+          speechRecognitionPermission:
+            'Ully Coffee needs speech recognition to convert your voice to text.',
+        },
+      ],
     ],
     extra: {
       claudeApiKey: process.env.CLAUDE_API_KEY,

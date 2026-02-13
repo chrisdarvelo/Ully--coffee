@@ -1,58 +1,129 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
+import Svg, { Path } from 'react-native-svg';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 
-export default function AIScreen({ navigation: tabNav }) {
-  const navigation = tabNav.getParent();
-  const features = [
-    {
-      key: 'extraction',
-      title: 'Analyze Extraction',
-      desc: 'Snap a photo of your shot and get instant feedback',
-    },
-    {
-      key: 'part',
-      title: 'Identify Parts',
-      desc: 'Photograph a machine part to find the name and source',
-    },
-    {
-      key: 'dialin',
-      title: 'Dial-In Help',
-      desc: 'Get grind and dose suggestions from your shot photo',
-    },
-  ];
+function MicIcon({ color, size }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z"
+        fill={color}
+      />
+      <Path
+        d="M19 11a7 7 0 01-14 0"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M12 18v3M9 21h6"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+export default function AIScreen() {
+  const [query, setQuery] = useState('');
+  const [listening, setListening] = useState(false);
+  const inputRef = useRef(null);
+
+  useSpeechRecognitionEvent('result', (event) => {
+    const transcript = event.results[0]?.transcript || '';
+    setQuery(transcript);
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    setListening(false);
+  });
+
+  useSpeechRecognitionEvent('error', () => {
+    setListening(false);
+  });
+
+  const startListening = async () => {
+    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!granted) return;
+
+    setListening(true);
+    ExpoSpeechRecognitionModule.start({
+      lang: 'en-US',
+      interimResults: true,
+    });
+  };
+
+  const stopListening = () => {
+    ExpoSpeechRecognitionModule.stop();
+    setListening(false);
+  };
+
+  const handleSubmit = () => {
+    if (!query.trim()) return;
+    Keyboard.dismiss();
+    // TODO: send query to Ully AI
+  };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.header}>
-        <CoffeeFlower size={48} />
-        <Text style={styles.title}>Ully AI</Text>
-        <Text style={styles.subtitle}>
-          Your coffee companion, powered by vision AI
-        </Text>
-      </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}
+    >
+      <View style={styles.content}>
+        <View style={styles.center}>
+          <CoffeeFlower size={48} spinning={listening} />
+          <Text style={styles.greeting}>{getGreeting()}</Text>
+        </View>
 
-      <View style={styles.section}>
-        {features.map((f) => (
+        <View style={styles.searchContainer}>
+          <TextInput
+            ref={inputRef}
+            style={styles.searchInput}
+            placeholder="How can I help?"
+            placeholderTextColor={Colors.tabInactive}
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={handleSubmit}
+            returnKeyType="send"
+            multiline={false}
+          />
           <TouchableOpacity
-            key={f.key}
-            style={styles.card}
-            onPress={() => navigation.navigate('Diagnostic', { type: f.key })}
+            style={[styles.micButton, listening && styles.micButtonActive]}
+            onPress={listening ? stopListening : startListening}
             activeOpacity={0.7}
           >
-            <Text style={styles.cardTitle}>{f.title}</Text>
-            <Text style={styles.cardDesc}>{f.desc}</Text>
+            <MicIcon
+              color={listening ? '#fff' : Colors.textSecondary}
+              size={20}
+            />
           </TouchableOpacity>
-        ))}
+        </View>
       </View>
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -61,52 +132,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  contentContainer: {
-    paddingBottom: 30,
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 32,
   },
-  header: {
+  center: {
     alignItems: 'center',
-    paddingTop: 64,
-    paddingBottom: 16,
-    paddingHorizontal: 24,
+    marginBottom: 40,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
+  greeting: {
+    fontSize: 18,
     color: Colors.text,
     fontFamily: Fonts.mono,
-    marginTop: 12,
+    marginTop: 16,
   },
-  subtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  section: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    gap: 10,
-  },
-  card: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.card,
-    borderRadius: 10,
-    padding: 16,
+    borderRadius: 28,
     borderWidth: 1,
     borderColor: Colors.border,
+    paddingHorizontal: 20,
+    paddingVertical: 4,
   },
-  cardTitle: {
+  searchInput: {
+    flex: 1,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: Fonts.mono,
     color: Colors.text,
-    fontFamily: Fonts.mono,
-    marginBottom: 4,
+    paddingVertical: 14,
   },
-  cardDesc: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    lineHeight: 18,
+  micButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  micButtonActive: {
+    backgroundColor: Colors.danger,
   },
 });
