@@ -10,6 +10,12 @@ export const Colors = {
   info: '#3498db',
 };
 
+import { Platform } from 'react-native';
+
+export const Fonts = {
+  mono: Platform.select({ ios: 'Menlo', android: 'monospace' }),
+};
+
 export const AuthColors = {
   background: '#FFFFFF',
   text: '#000000',

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from '@react-native-firebase/auth';
 import { auth } from '../services/FirebaseConfig';
-import { AuthColors } from '../utils/constants';
+import { AuthColors, Fonts } from '../utils/constants';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -143,11 +143,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     color: AuthColors.text,
+    fontFamily: Fonts.mono,
   },
   subtitle: {
     fontSize: 16,
     color: AuthColors.textSecondary,
     marginTop: 8,
+    fontFamily: Fonts.mono,
   },
   form: {
     gap: 16,
@@ -161,12 +163,14 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: AuthColors.text,
+    fontFamily: Fonts.mono,
   },
   forgotText: {
     color: AuthColors.link,
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'right',
+    fontFamily: Fonts.mono,
   },
   signInButton: {
     backgroundColor: AuthColors.buttonFill,
@@ -182,6 +186,7 @@ const styles = StyleSheet.create({
     color: AuthColors.buttonText,
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
   footer: {
     flexDirection: 'row',
@@ -191,10 +196,12 @@ const styles = StyleSheet.create({
   footerText: {
     color: AuthColors.textSecondary,
     fontSize: 14,
+    fontFamily: Fonts.mono,
   },
   linkText: {
     color: AuthColors.link,
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
 });

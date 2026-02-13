@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import { AuthColors } from '../utils/constants';
+import { AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 
 export default function WelcomeScreen({ navigation }) {
@@ -63,12 +63,13 @@ const styles = StyleSheet.create({
     color: AuthColors.text,
     marginTop: 24,
     letterSpacing: 1,
+    fontFamily: Fonts.mono,
   },
   subtitle: {
     fontSize: 16,
     color: AuthColors.textSecondary,
     marginTop: 8,
-    fontWeight: '300',
+    fontFamily: Fonts.mono,
   },
   buttonSection: {
     gap: 12,
@@ -83,6 +84,7 @@ const styles = StyleSheet.create({
     color: AuthColors.buttonText,
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
   createAccountButton: {
     backgroundColor: 'transparent',
@@ -96,5 +98,6 @@ const styles = StyleSheet.create({
     color: AuthColors.text,
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
 });
