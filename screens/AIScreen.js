@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,33 +10,41 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  FlatList,
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Svg, { Path, Line } from 'react-native-svg';
 import { auth } from '../services/FirebaseConfig';
 import ClaudeService from '../services/ClaudeService';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 import PaperBackground from '../components/PaperBackground';
 
+const HISTORY_KEY = '@ully_chat_history';
+
 function MicIcon({ color, size }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z" fill={color} />
+      <Path d="M19 11a7 7 0 01-14 0" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M12 18v3M9 21h6" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function BookIcon({ color, size }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
-        d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z"
-        fill={color}
+        d="M4 19.5A2.5 2.5 0 016.5 17H20"
+        stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"
       />
       <Path
-        d="M19 11a7 7 0 01-14 0"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
+        d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"
+        stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"
       />
-      <Path
-        d="M12 18v3M9 21h6"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-      />
+      <Line x1="9" y1="7" x2="16" y2="7" stroke={color} strokeWidth={1.2} strokeLinecap="round" />
+      <Line x1="9" y1="11" x2="14" y2="11" stroke={color} strokeWidth={1.2} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -49,11 +57,40 @@ export default function AIScreen() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
 
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      const data = await AsyncStorage.getItem(HISTORY_KEY);
+      if (data) setHistory(JSON.parse(data));
+    } catch (e) {}
+  };
+
+  const saveChat = useCallback(async (msgs) => {
+    if (msgs.length === 0) return;
+    const firstUserMsg = msgs.find((m) => m.role === 'user');
+    const preview = firstUserMsg?.text || 'Chat';
+    const entry = {
+      id: Date.now().toString(),
+      preview: preview.length > 50 ? preview.slice(0, 50) + '...' : preview,
+      date: new Date().toLocaleDateString(),
+      messages: msgs,
+    };
+    const updated = [entry, ...history].slice(0, 50);
+    setHistory(updated);
+    try {
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+    } catch (e) {}
+  }, [history]);
+
   const toggleMic = () => {
-    // TODO: wire up expo-speech-recognition on dev build
     setListening((v) => !v);
   };
 
@@ -62,25 +99,88 @@ export default function AIScreen() {
     if (!text || loading) return;
 
     const userMsg = { role: 'user', text };
-    setMessages((prev) => [...prev, userMsg]);
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setQuery('');
     setLoading(true);
 
     try {
       const result = await ClaudeService.chat(text);
-      setMessages((prev) => [...prev, { role: 'ully', text: result }]);
+      const withReply = [...newMessages, { role: 'ully', text: result }];
+      setMessages(withReply);
+      saveChat(withReply);
     } catch (error) {
-      setMessages((prev) => [
-        ...prev,
+      const withError = [
+        ...newMessages,
         { role: 'ully', text: 'Could not reach Ully AI. Check your connection and try again.' },
-      ]);
+      ];
+      setMessages(withError);
     } finally {
       setLoading(false);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
   };
 
+  const openChat = (entry) => {
+    setMessages(entry.messages);
+    setShowHistory(false);
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setShowHistory(false);
+  };
+
   const hasMessages = messages.length > 0;
+
+  if (showHistory) {
+    return (
+      <PaperBackground>
+        <View style={styles.historyContainer}>
+          <View style={styles.historyHeader}>
+            <Text style={styles.historyTitle}>Chat History</Text>
+            <TouchableOpacity onPress={() => setShowHistory(false)} activeOpacity={0.7}>
+              <Text style={styles.historyClose}>Done</Text>
+            </TouchableOpacity>
+          </View>
+
+          {history.length === 0 ? (
+            <View style={styles.emptyHistory}>
+              <Text style={styles.emptyText}>No past chats yet</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={history}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.historyList}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.historyRow}
+                  onPress={() => openChat(item)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.historyPreview} numberOfLines={1}>
+                    {item.preview}
+                  </Text>
+                  <Text style={styles.historyDate}>{item.date}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+
+          <View style={styles.historyFooter}>
+            <TouchableOpacity
+              style={styles.newChatBtn}
+              onPress={startNewChat}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.newChatText}>New Chat</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </PaperBackground>
+    );
+  }
 
   return (
     <PaperBackground>
@@ -92,38 +192,56 @@ export default function AIScreen() {
         >
           {!hasMessages ? (
             <View style={[styles.fill, styles.centered]}>
-              <CoffeeFlower size={64} spinning={listening} bold />
-              <Text style={styles.greeting}>Hello {name},</Text>
-              <Text style={styles.subGreeting}>how can I help?</Text>
+              <View style={styles.topBar}>
+                <View style={{ width: 32 }} />
+                <TouchableOpacity onPress={() => setShowHistory(true)} activeOpacity={0.7}>
+                  <BookIcon color={Colors.text} size={24} />
+                </TouchableOpacity>
+              </View>
 
-              <View style={styles.searchWrap}>
-                <View style={styles.searchContainer}>
-                  <TextInput
-                    ref={inputRef}
-                    style={styles.searchInput}
-                    placeholderTextColor={Colors.tabInactive}
-                    value={query}
-                    onChangeText={setQuery}
-                    onSubmitEditing={handleSubmit}
-                    returnKeyType="send"
-                    multiline={false}
-                    autoFocus={false}
-                  />
-                  <TouchableOpacity
-                    style={[styles.micButton, listening && styles.micButtonActive]}
-                    onPress={toggleMic}
-                    activeOpacity={0.7}
-                  >
-                    <MicIcon
-                      color={listening ? '#fff' : Colors.textSecondary}
-                      size={20}
+              <View style={styles.centerContent}>
+                <CoffeeFlower size={64} spinning={listening} bold />
+                <Text style={styles.greeting}>Hello {name},</Text>
+                <Text style={styles.subGreeting}>how can I help?</Text>
+
+                <View style={styles.searchWrap}>
+                  <View style={styles.searchContainer}>
+                    <TextInput
+                      ref={inputRef}
+                      style={styles.searchInput}
+                      placeholderTextColor={Colors.tabInactive}
+                      value={query}
+                      onChangeText={setQuery}
+                      onSubmitEditing={handleSubmit}
+                      returnKeyType="send"
+                      multiline={false}
+                      autoFocus={false}
                     />
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.micButton, listening && styles.micButtonActive]}
+                      onPress={toggleMic}
+                      activeOpacity={0.7}
+                    >
+                      <MicIcon
+                        color={listening ? '#fff' : Colors.textSecondary}
+                        size={20}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>
           ) : (
             <View style={styles.fill}>
+              <View style={styles.chatTopBar}>
+                <TouchableOpacity onPress={startNewChat} activeOpacity={0.7}>
+                  <Text style={styles.chatTopBtn}>New</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowHistory(true)} activeOpacity={0.7}>
+                  <BookIcon color={Colors.text} size={22} />
+                </TouchableOpacity>
+              </View>
+
               <ScrollView
                 ref={scrollRef}
                 style={styles.chatScroll}
@@ -190,9 +308,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   centered: {
+    flex: 1,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+  },
+  centerContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
+  },
+  chatTopBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 8,
+  },
+  chatTopBtn: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
   },
   greeting: {
     fontSize: 20,
@@ -245,7 +387,7 @@ const styles = StyleSheet.create({
   },
   chatContent: {
     padding: 20,
-    paddingTop: 64,
+    paddingTop: 8,
     paddingBottom: 8,
   },
   userBubble: {
@@ -289,5 +431,80 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 24,
     paddingTop: 8,
+  },
+  // History view
+  historyContainer: {
+    flex: 1,
+    paddingTop: 60,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  historyTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+  },
+  historyClose: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+  },
+  historyList: {
+    paddingHorizontal: 24,
+  },
+  historyRow: {
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyPreview: {
+    fontSize: 14,
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    flex: 1,
+    marginRight: 12,
+  },
+  historyDate: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+  },
+  emptyHistory: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+  },
+  historyFooter: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  newChatBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 20,
+    backgroundColor: Colors.text,
+  },
+  newChatText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: Fonts.mono,
+    fontWeight: '600',
   },
 });
