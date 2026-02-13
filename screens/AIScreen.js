@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,21 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from 'expo-speech-recognition';
 import Svg, { Path } from 'react-native-svg';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
+
+let SpeechModule = null;
+let useSpeechEvent = () => {};
+try {
+  const speech = require('expo-speech-recognition');
+  SpeechModule = speech.ExpoSpeechRecognitionModule;
+  useSpeechEvent = speech.useSpeechRecognitionEvent;
+} catch (e) {
+  // Not available in Expo Go
+}
 
 function MicIcon({ color, size }) {
   return (
@@ -52,32 +59,33 @@ export default function AIScreen() {
   const [listening, setListening] = useState(false);
   const inputRef = useRef(null);
 
-  useSpeechRecognitionEvent('result', (event) => {
+  useSpeechEvent('result', (event) => {
     const transcript = event.results[0]?.transcript || '';
     setQuery(transcript);
   });
 
-  useSpeechRecognitionEvent('end', () => {
+  useSpeechEvent('end', () => {
     setListening(false);
   });
 
-  useSpeechRecognitionEvent('error', () => {
+  useSpeechEvent('error', () => {
     setListening(false);
   });
 
   const startListening = async () => {
-    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!SpeechModule) {
+      Alert.alert('Not Available', 'Voice input requires a development build.');
+      return;
+    }
+    const { granted } = await SpeechModule.requestPermissionsAsync();
     if (!granted) return;
 
     setListening(true);
-    ExpoSpeechRecognitionModule.start({
-      lang: 'en-US',
-      interimResults: true,
-    });
+    SpeechModule.start({ lang: 'en-US', interimResults: true });
   };
 
   const stopListening = () => {
-    ExpoSpeechRecognitionModule.stop();
+    if (SpeechModule) SpeechModule.stop();
     setListening(false);
   };
 
