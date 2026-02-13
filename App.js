@@ -8,6 +8,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './services/FirebaseConfig';
 import { Colors, AuthColors, Fonts } from './utils/constants';
 import CoffeeFlower from './components/CoffeeFlower';
+import Svg, { Path, Circle, Line } from 'react-native-svg';
 
 import HomeScreen from './screens/HomeScreen';
 import TroubleshootScreen from './screens/TroubleshootScreen';
@@ -38,27 +39,67 @@ function AuthNavigator() {
   );
 }
 
+function ScanIcon({ color, size }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Corner brackets */}
+      <Path d="M3 7V4a1 1 0 011-1h3M17 3h3a1 1 0 011 1v3M21 17v3a1 1 0 01-1 1h-3M7 21H4a1 1 0 01-1-1v-3" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+      {/* Barcode lines */}
+      <Line x1="7" y1="7" x2="7" y2="17" stroke={color} strokeWidth={1.5} />
+      <Line x1="10" y1="7" x2="10" y2="17" stroke={color} strokeWidth={1} />
+      <Line x1="12.5" y1="7" x2="12.5" y2="17" stroke={color} strokeWidth={2} />
+      <Line x1="15" y1="7" x2="15" y2="17" stroke={color} strokeWidth={1} />
+      <Line x1="17" y1="7" x2="17" y2="17" stroke={color} strokeWidth={1.5} />
+    </Svg>
+  );
+}
+
+function ProfileIcon({ color, size }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Head */}
+      <Circle cx="12" cy="8" r="4" fill={color} />
+      {/* Shoulders & chest */}
+      <Path d="M4 22c0-4.418 3.582-8 8-8s8 3.582 8 8" fill={color} />
+    </Svg>
+  );
+}
+
 function TabIcon({ label, focused }) {
+  const color = focused ? Colors.text : Colors.tabInactive;
+  const scale = focused ? 1.15 : 1;
+
   if (label === 'AI') {
     return (
-      <View style={{ transform: [{ scale: focused ? 1.2 : 1 }] }}>
-        <CoffeeFlower size={24} />
+      <View style={{ transform: [{ scale }] }}>
+        <CoffeeFlower size={22} />
       </View>
     );
   }
 
-  const icons = {
-    Home: '🏠',
-    Troubleshoot: '🔧',
-    Profile: '👤',
-  };
+  if (label === 'Troubleshoot') {
+    return (
+      <View style={{ transform: [{ scale }] }}>
+        <ScanIcon color={color} size={24} />
+      </View>
+    );
+  }
+
+  if (label === 'Profile') {
+    return (
+      <View style={{ transform: [{ scale }] }}>
+        <ProfileIcon color={color} size={24} />
+      </View>
+    );
+  }
 
   return (
     <Text style={{
-      fontSize: 24,
-      transform: [{ scale: focused ? 1.2 : 1 }],
+      fontSize: 22,
+      color,
+      transform: [{ scale }],
     }}>
-      {icons[label]}
+      ⌂
     </Text>
   );
 }

@@ -9,11 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { AuthColors, Fonts } from '../utils/constants';
+import CoffeeFlower from '../components/CoffeeFlower';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -101,7 +101,7 @@ export default function LoginScreen({ navigation }) {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color={AuthColors.buttonText} />
+                <CoffeeFlower size={24} spinning />
               ) : (
                 <Text style={styles.signInButtonText}>Sign In</Text>
               )}
