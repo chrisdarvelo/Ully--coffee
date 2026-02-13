@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: 64,
     paddingBottom: 8,
   },
   title: {
