@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View, StyleSheet } from 'react-native';
-import Svg, { G, Ellipse, Circle } from 'react-native-svg';
+import Svg, { Ellipse, Circle } from 'react-native-svg';
 
-const AnimatedG = Animated.createAnimatedComponent(G);
-
-export default function CoffeeFlower({ size = 150 }) {
+export default function CoffeeFlower({ size = 150, spinning = false }) {
   const breathAnim = useRef(new Animated.Value(1)).current;
-  const stamenRotation = useRef(new Animated.Value(0)).current;
+  const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const breathLoop = Animated.loop(
@@ -23,25 +21,28 @@ export default function CoffeeFlower({ size = 150 }) {
         }),
       ])
     );
-
-    const rotateLoop = Animated.loop(
-      Animated.timing(stamenRotation, {
-        toValue: 1,
-        duration: 8000,
-        useNativeDriver: true,
-      })
-    );
-
     breathLoop.start();
-    rotateLoop.start();
+    return () => breathLoop.stop();
+  }, [breathAnim]);
 
-    return () => {
-      breathLoop.stop();
-      rotateLoop.stop();
-    };
-  }, [breathAnim, stamenRotation]);
+  useEffect(() => {
+    if (spinning) {
+      spinAnim.setValue(0);
+      const spinLoop = Animated.loop(
+        Animated.timing(spinAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        })
+      );
+      spinLoop.start();
+      return () => spinLoop.stop();
+    } else {
+      spinAnim.setValue(0);
+    }
+  }, [spinning, spinAnim]);
 
-  const stamenSpin = stamenRotation.interpolate({
+  const rotate = spinAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
@@ -56,9 +57,13 @@ export default function CoffeeFlower({ size = 150 }) {
   const stamenRadius = size * 0.025;
   const centerRadius = size * 0.07;
 
+  const transform = spinning
+    ? [{ scale: breathAnim }, { rotate }]
+    : [{ scale: breathAnim }];
+
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Animated.View style={{ transform: [{ scale: breathAnim }] }}>
+      <Animated.View style={{ transform }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* Petals */}
           {petalAngles.map((angle) => (
@@ -76,29 +81,7 @@ export default function CoffeeFlower({ size = 150 }) {
             />
           ))}
 
-          {/* Center disk */}
-          <Circle cx={center} cy={center} r={centerRadius} fill="#D4A574" />
-          <Circle
-            cx={center}
-            cy={center}
-            r={centerRadius * 0.65}
-            fill="#C0783E"
-          />
-        </Svg>
-      </Animated.View>
-
-      {/* Stamens with rotation */}
-      <Animated.View
-        style={[
-          styles.stamenOverlay,
-          {
-            width: size,
-            height: size,
-            transform: [{ rotate: stamenSpin }],
-          },
-        ]}
-      >
-        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {/* Stamens */}
           {[0, 60, 120, 180, 240, 300].map((angle) => {
             const rad = (angle * Math.PI) / 180;
             const sx = center + stamenDistance * Math.cos(rad);
@@ -114,6 +97,15 @@ export default function CoffeeFlower({ size = 150 }) {
               />
             );
           })}
+
+          {/* Center disk */}
+          <Circle cx={center} cy={center} r={centerRadius} fill="#D4A574" />
+          <Circle
+            cx={center}
+            cy={center}
+            r={centerRadius * 0.65}
+            fill="#C0783E"
+          />
         </Svg>
       </Animated.View>
     </View>
@@ -124,8 +116,5 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  stamenOverlay: {
-    position: 'absolute',
   },
 });

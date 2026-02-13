@@ -14,8 +14,12 @@ export default function WelcomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.brandSection}>
-          <CoffeeFlower size={150} />
-          <Text style={styles.title}>Ully AI</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Ully</Text>
+            <View style={styles.flowerWrap}>
+              <CoffeeFlower size={36} />
+            </View>
+          </View>
           <Text style={styles.subtitle}>your coffee companion</Text>
         </View>
 
@@ -57,19 +61,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: '700',
     color: AuthColors.text,
-    marginTop: 24,
-    letterSpacing: 1,
+    letterSpacing: 2,
     fontFamily: Fonts.mono,
   },
+  flowerWrap: {
+    marginLeft: 6,
+    marginTop: 12,
+  },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: AuthColors.textSecondary,
-    marginTop: 8,
+    marginTop: 6,
     fontFamily: Fonts.mono,
+    letterSpacing: 1,
   },
   buttonSection: {
     gap: 12,

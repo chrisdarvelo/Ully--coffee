@@ -1,16 +1,16 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Image 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image
 } from 'react-native';
-import { Colors } from '../utils/constants';
+import { Colors, Fonts } from '../utils/constants';
 
 export default function ResultScreen({ route, navigation }) {
-  const { photo, diagnosis, type } = route.params;
+  const { photo, diagnosis } = route.params;
 
   return (
     <ScrollView style={styles.container}>
@@ -19,8 +19,8 @@ export default function ResultScreen({ route, navigation }) {
       )}
 
       <View style={styles.content}>
-        <Text style={styles.title}>AI Diagnosis</Text>
-        
+        <Text style={styles.title}>Diagnosis</Text>
+
         <View style={styles.diagnosisCard}>
           <Text style={styles.diagnosisText}>{diagnosis}</Text>
         </View>
@@ -28,7 +28,7 @@ export default function ResultScreen({ route, navigation }) {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.doneButton}
-            onPress={() => navigation.navigate('Home')}
+            onPress={() => navigation.navigate('Tabs', { screen: 'Home' })}
           >
             <Text style={styles.doneButtonText}>Back to Home</Text>
           </TouchableOpacity>
@@ -39,12 +39,6 @@ export default function ResultScreen({ route, navigation }) {
           >
             <Text style={styles.newDiagnosisButtonText}>New Diagnosis</Text>
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            💡 Tip: Save this diagnosis or share with your team
-          </Text>
         </View>
       </View>
     </ScrollView>
@@ -58,68 +52,60 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: '100%',
-    height: 250,
-    backgroundColor: Colors.card,
+    height: 220,
+    backgroundColor: Colors.border,
   },
   content: {
-    padding: 20,
+    padding: 24,
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 20,
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    marginBottom: 16,
   },
   diagnosisCard: {
     backgroundColor: Colors.card,
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.success,
+    padding: 18,
+    borderRadius: 10,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   diagnosisText: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.text,
-    lineHeight: 24,
+    fontFamily: Fonts.mono,
+    lineHeight: 22,
   },
   buttonContainer: {
     gap: 10,
   },
   doneButton: {
-    backgroundColor: Colors.primary,
-    padding: 18,
-    borderRadius: 8,
+    backgroundColor: Colors.text,
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
   },
   doneButtonText: {
-    color: Colors.background,
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: Fonts.mono,
   },
   newDiagnosisButton: {
     backgroundColor: 'transparent',
-    padding: 18,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   newDiagnosisButtonText: {
-    color: Colors.primary,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  footer: {
-    marginTop: 30,
-    padding: 15,
-    backgroundColor: Colors.card,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: Colors.textSecondary,
-    fontSize: 14,
-    textAlign: 'center',
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
 });

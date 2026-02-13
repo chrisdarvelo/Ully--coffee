@@ -1,35 +1,25 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import { Colors, DiagnosticTypes } from '../utils/constants';
+import { View, Text, StyleSheet } from 'react-native';
+import { auth } from '../services/FirebaseConfig';
+import { Colors, Fonts } from '../utils/constants';
+import CoffeeFlower from '../components/CoffeeFlower';
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen() {
+  const user = auth.currentUser;
+  const name = user?.email ? user.email.split('@')[0] : 'barista';
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>Ully Coffee</Text>
-        <Text style={styles.tagline}>AI-Powered Coffee Diagnostics</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.logo}>Ully</Text>
+          <View style={styles.flowerWrap}>
+            <CoffeeFlower size={24} />
+          </View>
+        </View>
+        <Text style={styles.greeting}>Hello, {name}</Text>
       </View>
-
-      <View style={styles.grid}>
-        {Object.entries(DiagnosticTypes).map(([key, value]) => (
-          <TouchableOpacity
-            key={key}
-            style={styles.card}
-            onPress={() => navigation.navigate('Diagnostic', { type: key })}
-          >
-            <Text style={styles.cardIcon}>{value.icon}</Text>
-            <Text style={styles.cardTitle}>{value.label}</Text>
-            <Text style={styles.cardDescription}>{value.description}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -39,44 +29,27 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    padding: 30,
-    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingTop: 64,
+  },
+  titleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
   },
   logo: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 8,
-  },
-  tagline: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-  },
-  grid: {
-    padding: 15,
-    gap: 12,
-  },
-  card: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-  },
-  cardIcon: {
-    fontSize: 32,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: Colors.text,
-    marginBottom: 6,
+    fontFamily: Fonts.mono,
   },
-  cardDescription: {
-    fontSize: 14,
+  flowerWrap: {
+    marginLeft: 6,
+    marginTop: 4,
+  },
+  greeting: {
+    fontSize: 15,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    fontFamily: Fonts.mono,
   },
 });

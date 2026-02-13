@@ -1,17 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   Image,
-  ActivityIndicator,
   Alert
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import ClaudeService from '../services/ClaudeService';
-import { Colors } from '../utils/constants';
+import CoffeeFlower from '../components/CoffeeFlower';
+import { Colors, Fonts } from '../utils/constants';
 
 export default function DiagnosticScreen({ route, navigation }) {
   const { type } = route.params;
@@ -40,11 +40,11 @@ export default function DiagnosticScreen({ route, navigation }) {
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
-        const photo = await cameraRef.current.takePictureAsync({
+        const p = await cameraRef.current.takePictureAsync({
           quality: 0.8,
           base64: true,
         });
-        setPhoto(photo);
+        setPhoto(p);
         setShowCamera(false);
       } catch (error) {
         Alert.alert('Error', 'Failed to take picture. Please try again.');
@@ -72,7 +72,7 @@ export default function DiagnosticScreen({ route, navigation }) {
     if (!photo) return;
 
     setIsAnalyzing(true);
-    
+
     try {
       let result;
       if (type === 'part') {
@@ -84,18 +84,18 @@ export default function DiagnosticScreen({ route, navigation }) {
           instructions[type]
         );
       }
-      
+
       navigation.navigate('Result', {
         photo: photo.uri,
         diagnosis: result,
         type: type,
       });
-      
+
     } catch (error) {
       console.error('Analysis error:', error);
       Alert.alert(
         'Analysis Failed',
-        'Could not analyze image. Check your Claude API key in DiagnosticScreen.js',
+        'Could not analyze image. Check your API key.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -105,8 +105,9 @@ export default function DiagnosticScreen({ route, navigation }) {
 
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.container, styles.centered]}>
+        <CoffeeFlower size={60} spinning />
+        <Text style={styles.brewingText}>Tamping...</Text>
       </View>
     );
   }
@@ -115,12 +116,11 @@ export default function DiagnosticScreen({ route, navigation }) {
     return (
       <View style={styles.container}>
         <View style={styles.permissionContainer}>
-          <Text style={styles.permissionIcon}>📷</Text>
           <Text style={styles.permissionTitle}>Camera Access Needed</Text>
           <Text style={styles.permissionText}>
             Ully needs camera access to diagnose equipment issues
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.permissionButton}
             onPress={requestPermission}
           >
@@ -133,32 +133,41 @@ export default function DiagnosticScreen({ route, navigation }) {
 
   if (showCamera) {
     return (
-      <View style={styles.container}>
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
         <CameraView style={styles.camera} ref={cameraRef} facing="back">
           <View style={styles.cameraOverlay}>
             <View style={styles.instructionBox}>
-              <Text style={styles.instructionText}>{instructions[type]}</Text>
+              <Text style={styles.instructionBoxText}>{instructions[type]}</Text>
             </View>
           </View>
-          
+
           <View style={styles.cameraControls}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowCamera(false)}
             >
               <Text style={styles.controlButtonText}>Cancel</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.captureButton}
               onPress={takePicture}
             >
               <View style={styles.captureButtonInner} />
             </TouchableOpacity>
-            
+
             <View style={{ width: 80 }} />
           </View>
         </CameraView>
+      </View>
+    );
+  }
+
+  if (isAnalyzing) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <CoffeeFlower size={100} spinning />
+        <Text style={styles.brewingText}>Brewing...</Text>
       </View>
     );
   }
@@ -176,25 +185,25 @@ export default function DiagnosticScreen({ route, navigation }) {
               style={styles.retakeButton}
               onPress={() => setPhoto(null)}
             >
-              <Text style={styles.retakeButtonText}>Retake Photo</Text>
+              <Text style={styles.retakeButtonText}>Retake</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.photoButtons}>
             <TouchableOpacity
-              style={[styles.photoButton, { backgroundColor: Colors.primary }]}
+              style={styles.photoButton}
               onPress={() => setShowCamera(true)}
             >
-              <Text style={styles.photoButtonIcon}>📷</Text>
               <Text style={styles.photoButtonText}>Take Photo</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.photoButton, { backgroundColor: Colors.info }]}
+              style={[styles.photoButton, styles.photoButtonOutline]}
               onPress={pickImage}
             >
-              <Text style={styles.photoButtonIcon}>🖼️</Text>
-              <Text style={styles.photoButtonText}>Choose from Library</Text>
+              <Text style={[styles.photoButtonText, { color: Colors.text }]}>
+                Choose from Library
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -205,14 +214,7 @@ export default function DiagnosticScreen({ route, navigation }) {
             onPress={analyzePhoto}
             disabled={isAnalyzing}
           >
-            {isAnalyzing ? (
-              <>
-                <ActivityIndicator color="#fff" />
-                <Text style={styles.analyzeButtonText}>  Analyzing...</Text>
-              </>
-            ) : (
-              <Text style={styles.analyzeButtonText}>Analyze with AI 🤖</Text>
-            )}
+            <Text style={styles.analyzeButtonText}>Analyze with Ully</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -225,73 +227,89 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  brewingText: {
+    color: Colors.textSecondary,
+    fontSize: 15,
+    fontFamily: Fonts.mono,
+    marginTop: 20,
+  },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    marginBottom: 8,
   },
   instruction: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 30,
+    fontFamily: Fonts.mono,
+    marginBottom: 28,
     lineHeight: 22,
   },
   photoButtons: {
-    gap: 15,
+    gap: 12,
   },
   photoButton: {
-    padding: 25,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 10,
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    backgroundColor: Colors.text,
   },
-  photoButtonIcon: {
-    fontSize: 30,
-    marginRight: 15,
+  photoButtonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   photoButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
   photoPreview: {
     alignItems: 'center',
   },
   photoImage: {
     width: '100%',
-    height: 400,
-    borderRadius: 12,
-    marginBottom: 20,
+    height: 350,
+    borderRadius: 10,
+    marginBottom: 16,
   },
   retakeButton: {
-    padding: 15,
+    padding: 12,
+    paddingHorizontal: 24,
     backgroundColor: Colors.card,
     borderRadius: 8,
-    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 16,
   },
   retakeButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: Colors.text,
+    fontSize: 14,
+    fontFamily: Fonts.mono,
   },
   analyzeButton: {
-    backgroundColor: Colors.success,
-    padding: 20,
-    borderRadius: 12,
+    backgroundColor: Colors.text,
+    padding: 18,
+    borderRadius: 10,
     alignItems: 'center',
-    marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'center',
+    marginTop: 12,
   },
   analyzeButtonText: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '700',
+    fontFamily: Fonts.mono,
   },
   camera: {
     flex: 1,
@@ -307,10 +325,11 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
   },
-  instructionText: {
+  instructionBoxText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     textAlign: 'center',
+    fontFamily: Fonts.mono,
   },
   cameraControls: {
     flexDirection: 'row',
@@ -320,7 +339,7 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
   },
   cancelButton: {
-    backgroundColor: Colors.danger,
+    backgroundColor: '#333',
     padding: 15,
     borderRadius: 8,
     width: 80,
@@ -328,24 +347,27 @@ const styles = StyleSheet.create({
   },
   controlButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
+    fontFamily: Fonts.mono,
   },
   captureButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: Colors.primary,
+    borderWidth: 3,
+    borderColor: '#ccc',
   },
   captureButtonInner: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.primary,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: '#ddd',
   },
   permissionContainer: {
     flex: 1,
@@ -353,31 +375,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  permissionIcon: {
-    fontSize: 80,
-    marginBottom: 20,
-  },
   permissionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: Colors.text,
+    fontFamily: Fonts.mono,
     marginBottom: 10,
   },
   permissionText: {
     color: Colors.textSecondary,
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: Fonts.mono,
     textAlign: 'center',
     marginBottom: 30,
+    lineHeight: 22,
   },
   permissionButton: {
-    backgroundColor: Colors.primary,
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: Colors.text,
+    padding: 14,
+    borderRadius: 10,
     paddingHorizontal: 30,
   },
   permissionButtonText: {
-    color: Colors.background,
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
 });
