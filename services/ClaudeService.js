@@ -74,6 +74,19 @@ Be specific and actionable. Use professional coffee terminology.`,
     return this.sendRequest(messages, 1500);
   }
 
+  async chat(text) {
+    const messages = [
+      {
+        role: 'user',
+        content: `You are Ully, a friendly and knowledgeable coffee companion AI. You help baristas and coffee enthusiasts with espresso extraction, equipment troubleshooting, grinder calibration, water chemistry, dial-in tips, and anything coffee-related. Keep answers concise and practical. Use professional coffee terminology but explain simply.
+
+User: ${text}`,
+      },
+    ];
+
+    return this.sendRequest(messages, 1024);
+  }
+
   async identifyPart(base64Image) {
     const messages = [
       {

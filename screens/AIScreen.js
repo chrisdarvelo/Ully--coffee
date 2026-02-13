@@ -5,14 +5,17 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { auth } from '../services/FirebaseConfig';
+import ClaudeService from '../services/ClaudeService';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
-
 
 function MicIcon({ color, size }) {
   return (
@@ -37,15 +40,13 @@ function MicIcon({ color, size }) {
   );
 }
 
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
-}
-
 export default function AIScreen() {
+  const user = auth.currentUser;
+  const name = user?.email ? user.email.split('@')[0] : 'friend';
+
   const [query, setQuery] = useState('');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const inputRef = useRef(null);
 
@@ -54,49 +55,107 @@ export default function AIScreen() {
     setListening((v) => !v);
   };
 
-  const handleSubmit = () => {
-    if (!query.trim()) return;
+  const handleSubmit = async () => {
+    const text = query.trim();
+    if (!text || loading) return;
     Keyboard.dismiss();
-    // TODO: send query to Ully AI
+
+    setLoading(true);
+    setResponse('');
+    try {
+      const result = await ClaudeService.chat(text);
+      setResponse(result);
+      setQuery('');
+    } catch (error) {
+      setResponse('Could not reach Ully AI. Check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={80}
-    >
-      <View style={styles.content}>
-        <View style={styles.center}>
-          <CoffeeFlower size={48} spinning={listening} />
-          <Text style={styles.greeting}>{getGreeting()}</Text>
-        </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80}
+      >
+        {loading ? (
+          <View style={[styles.fill, styles.centered]}>
+            <CoffeeFlower size={80} spinning />
+            <Text style={styles.brewingText}>Brewing...</Text>
+          </View>
+        ) : response ? (
+          <View style={styles.fill}>
+            <ScrollView
+              style={styles.responseScroll}
+              contentContainerStyle={styles.responseContent}
+            >
+              <View style={styles.responseBubble}>
+                <Text style={styles.responseText}>{response}</Text>
+              </View>
+            </ScrollView>
 
-        <View style={styles.searchContainer}>
-          <TextInput
-            ref={inputRef}
-            style={styles.searchInput}
-            placeholder="How can I help?"
-            placeholderTextColor={Colors.tabInactive}
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={handleSubmit}
-            returnKeyType="send"
-            multiline={false}
-          />
-          <TouchableOpacity
-            style={[styles.micButton, listening && styles.micButtonActive]}
-            onPress={toggleMic}
-            activeOpacity={0.7}
-          >
-            <MicIcon
-              color={listening ? '#fff' : Colors.textSecondary}
-              size={20}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+            <View style={styles.inputBar}>
+              <View style={styles.searchContainer}>
+                <TextInput
+                  ref={inputRef}
+                  style={styles.searchInput}
+                  placeholderTextColor={Colors.tabInactive}
+                  value={query}
+                  onChangeText={setQuery}
+                  onSubmitEditing={handleSubmit}
+                  returnKeyType="send"
+                  multiline={false}
+                />
+                <TouchableOpacity
+                  style={[styles.micButton, listening && styles.micButtonActive]}
+                  onPress={toggleMic}
+                  activeOpacity={0.7}
+                >
+                  <MicIcon
+                    color={listening ? '#fff' : Colors.textSecondary}
+                    size={20}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.fill, styles.centered]}>
+            <CoffeeFlower size={48} spinning={listening} />
+            <Text style={styles.greeting}>Hello {name},</Text>
+            <Text style={styles.subGreeting}>how can I help?</Text>
+
+            <View style={styles.searchWrap}>
+              <View style={styles.searchContainer}>
+                <TextInput
+                  ref={inputRef}
+                  style={styles.searchInput}
+                  placeholderTextColor={Colors.tabInactive}
+                  value={query}
+                  onChangeText={setQuery}
+                  onSubmitEditing={handleSubmit}
+                  returnKeyType="send"
+                  multiline={false}
+                  autoFocus={false}
+                />
+                <TouchableOpacity
+                  style={[styles.micButton, listening && styles.micButtonActive]}
+                  onPress={toggleMic}
+                  activeOpacity={0.7}
+                >
+                  <MicIcon
+                    color={listening ? '#fff' : Colors.textSecondary}
+                    size={20}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -105,20 +164,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  content: {
+  fill: {
     flex: 1,
+  },
+  centered: {
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 32,
   },
-  center: {
-    alignItems: 'center',
-    marginBottom: 40,
+  brewingText: {
+    color: Colors.textSecondary,
+    fontSize: 15,
+    fontFamily: Fonts.mono,
+    marginTop: 20,
+    textAlign: 'center',
   },
   greeting: {
-    fontSize: 18,
+    fontSize: 20,
     color: Colors.text,
     fontFamily: Fonts.mono,
-    marginTop: 16,
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  subGreeting: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  searchWrap: {
+    marginTop: 32,
+    alignSelf: 'stretch',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -147,5 +224,32 @@ const styles = StyleSheet.create({
   },
   micButtonActive: {
     backgroundColor: Colors.danger,
+  },
+  responseScroll: {
+    flex: 1,
+  },
+  responseContent: {
+    padding: 24,
+    paddingTop: 64,
+    paddingBottom: 16,
+  },
+  responseBubble: {
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  responseText: {
+    color: Colors.text,
+    fontSize: 14,
+    fontFamily: Fonts.mono,
+    lineHeight: 22,
+    marginTop: 0,
+  },
+  inputBar: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    paddingTop: 8,
   },
 });
