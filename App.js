@@ -79,6 +79,53 @@ function ScanIcon({ color, size }) {
   );
 }
 
+function CoffeeFruitIcon({ color, size }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Stem */}
+      <Path
+        d="M12 4v4"
+        stroke={color}
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      {/* Left leaf */}
+      <Path
+        d="M12 5c-2-1.5-5-1-5 1.5s3 2 5 0.5"
+        fill="#5A8C3C"
+        stroke="#4A7A2E"
+        strokeWidth={0.8}
+      />
+      {/* Right leaf */}
+      <Path
+        d="M12 5c2-1.5 5-1 5 1.5s-3 2-5 0.5"
+        fill="#6B9E4A"
+        stroke="#4A7A2E"
+        strokeWidth={0.8}
+      />
+      {/* Left cherry */}
+      <Circle cx="10" cy="14" r="4" fill="#C0392B" stroke="#A33225" strokeWidth={0.8} />
+      {/* Right cherry */}
+      <Circle cx="15" cy="13.5" r="3.5" fill="#E74C3C" stroke="#C0392B" strokeWidth={0.8} />
+      {/* Cherry stems connecting to main stem */}
+      <Path
+        d="M12 8c-1 1-2 3-2 6"
+        stroke={color}
+        strokeWidth={1}
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Path
+        d="M12 8c1 0.5 2 2.5 3 5.5"
+        stroke={color}
+        strokeWidth={1}
+        strokeLinecap="round"
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
 function ProfileIcon({ color, size }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -97,7 +144,7 @@ function TabIcon({ label, focused }) {
   if (label === 'AI') {
     return (
       <View style={{ transform: [{ scale }] }}>
-        <CoffeeFlower size={22} bold />
+        <CoffeeFruitIcon color={color} size={24} />
       </View>
     );
   }
