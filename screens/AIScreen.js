@@ -46,10 +46,11 @@ export default function AIScreen() {
   const name = user?.email ? user.email.split('@')[0] : 'friend';
 
   const [query, setQuery] = useState('');
-  const [response, setResponse] = useState('');
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const inputRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const toggleMic = () => {
     // TODO: wire up expo-speech-recognition on dev build
@@ -59,20 +60,27 @@ export default function AIScreen() {
   const handleSubmit = async () => {
     const text = query.trim();
     if (!text || loading) return;
-    Keyboard.dismiss();
 
+    const userMsg = { role: 'user', text };
+    setMessages((prev) => [...prev, userMsg]);
+    setQuery('');
     setLoading(true);
-    setResponse('');
+
     try {
       const result = await ClaudeService.chat(text);
-      setResponse(result);
-      setQuery('');
+      setMessages((prev) => [...prev, { role: 'ully', text: result }]);
     } catch (error) {
-      setResponse('Could not reach Ully AI. Check your connection and try again.');
+      setMessages((prev) => [
+        ...prev,
+        { role: 'ully', text: 'Could not reach Ully AI. Check your connection and try again.' },
+      ]);
     } finally {
       setLoading(false);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
   };
+
+  const hasMessages = messages.length > 0;
 
   return (
     <PaperBackground>
@@ -82,80 +90,92 @@ export default function AIScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={80}
         >
-          {loading ? (
+          {!hasMessages ? (
             <View style={[styles.fill, styles.centered]}>
-              <CoffeeFlower size={80} spinning bold />
-              <Text style={styles.brewingText}>Brewing...</Text>
-            </View>
-        ) : response ? (
-          <View style={styles.fill}>
-            <ScrollView
-              style={styles.responseScroll}
-              contentContainerStyle={styles.responseContent}
-            >
-              <View style={styles.responseBubble}>
-                <Text style={styles.responseText}>{response}</Text>
-              </View>
-            </ScrollView>
+              <CoffeeFlower size={64} spinning={listening} bold />
+              <Text style={styles.greeting}>Hello {name},</Text>
+              <Text style={styles.subGreeting}>how can I help?</Text>
 
-            <View style={styles.inputBar}>
-              <View style={styles.searchContainer}>
-                <TextInput
-                  ref={inputRef}
-                  style={styles.searchInput}
-                  placeholderTextColor={Colors.tabInactive}
-                  value={query}
-                  onChangeText={setQuery}
-                  onSubmitEditing={handleSubmit}
-                  returnKeyType="send"
-                  multiline={false}
-                />
-                <TouchableOpacity
-                  style={[styles.micButton, listening && styles.micButtonActive]}
-                  onPress={toggleMic}
-                  activeOpacity={0.7}
-                >
-                  <MicIcon
-                    color={listening ? '#fff' : Colors.textSecondary}
-                    size={20}
+              <View style={styles.searchWrap}>
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    ref={inputRef}
+                    style={styles.searchInput}
+                    placeholderTextColor={Colors.tabInactive}
+                    value={query}
+                    onChangeText={setQuery}
+                    onSubmitEditing={handleSubmit}
+                    returnKeyType="send"
+                    multiline={false}
+                    autoFocus={false}
                   />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.micButton, listening && styles.micButtonActive]}
+                    onPress={toggleMic}
+                    activeOpacity={0.7}
+                  >
+                    <MicIcon
+                      color={listening ? '#fff' : Colors.textSecondary}
+                      size={20}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        ) : (
-          <View style={[styles.fill, styles.centered]}>
-            <CoffeeFlower size={64} spinning={listening} bold />
-            <Text style={styles.greeting}>Hello {name},</Text>
-            <Text style={styles.subGreeting}>how can I help?</Text>
+          ) : (
+            <View style={styles.fill}>
+              <ScrollView
+                ref={scrollRef}
+                style={styles.chatScroll}
+                contentContainerStyle={styles.chatContent}
+                onContentSizeChange={() =>
+                  scrollRef.current?.scrollToEnd({ animated: true })
+                }
+              >
+                {messages.map((msg, i) =>
+                  msg.role === 'user' ? (
+                    <View key={i} style={styles.userBubble}>
+                      <Text style={styles.userText}>{msg.text}</Text>
+                    </View>
+                  ) : (
+                    <View key={i} style={styles.ullyBubble}>
+                      <Text style={styles.ullyText}>{msg.text}</Text>
+                    </View>
+                  )
+                )}
+                {loading && (
+                  <View style={styles.loadingRow}>
+                    <CoffeeFlower size={32} spinning bold />
+                  </View>
+                )}
+              </ScrollView>
 
-            <View style={styles.searchWrap}>
-              <View style={styles.searchContainer}>
-                <TextInput
-                  ref={inputRef}
-                  style={styles.searchInput}
-                  placeholderTextColor={Colors.tabInactive}
-                  value={query}
-                  onChangeText={setQuery}
-                  onSubmitEditing={handleSubmit}
-                  returnKeyType="send"
-                  multiline={false}
-                  autoFocus={false}
-                />
-                <TouchableOpacity
-                  style={[styles.micButton, listening && styles.micButtonActive]}
-                  onPress={toggleMic}
-                  activeOpacity={0.7}
-                >
-                  <MicIcon
-                    color={listening ? '#fff' : Colors.textSecondary}
-                    size={20}
+              <View style={styles.inputBar}>
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    ref={inputRef}
+                    style={styles.searchInput}
+                    placeholderTextColor={Colors.tabInactive}
+                    value={query}
+                    onChangeText={setQuery}
+                    onSubmitEditing={handleSubmit}
+                    returnKeyType="send"
+                    multiline={false}
                   />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.micButton, listening && styles.micButtonActive]}
+                    onPress={toggleMic}
+                    activeOpacity={0.7}
+                  >
+                    <MicIcon
+                      color={listening ? '#fff' : Colors.textSecondary}
+                      size={20}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        )}
+          )}
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </PaperBackground>
@@ -173,13 +193,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
-  },
-  brewingText: {
-    color: Colors.textSecondary,
-    fontSize: 15,
-    fontFamily: Fonts.mono,
-    marginTop: 20,
-    textAlign: 'center',
   },
   greeting: {
     fontSize: 20,
@@ -227,27 +240,50 @@ const styles = StyleSheet.create({
   micButtonActive: {
     backgroundColor: Colors.danger,
   },
-  responseScroll: {
+  chatScroll: {
     flex: 1,
   },
-  responseContent: {
-    padding: 24,
+  chatContent: {
+    padding: 20,
     paddingTop: 64,
-    paddingBottom: 16,
+    paddingBottom: 8,
   },
-  responseBubble: {
+  userBubble: {
+    alignSelf: 'flex-end',
+    backgroundColor: Colors.text,
+    borderRadius: 18,
+    borderBottomRightRadius: 4,
+    padding: 14,
+    maxWidth: '80%',
+    marginBottom: 12,
+  },
+  userText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: Fonts.mono,
+    lineHeight: 20,
+  },
+  ullyBubble: {
+    alignSelf: 'flex-start',
     backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 18,
+    borderBottomLeftRadius: 4,
+    padding: 14,
+    maxWidth: '85%',
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  responseText: {
+  ullyText: {
     color: Colors.text,
     fontSize: 14,
     fontFamily: Fonts.mono,
     lineHeight: 22,
-    marginTop: 0,
+  },
+  loadingRow: {
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+    marginLeft: 4,
   },
   inputBar: {
     paddingHorizontal: 20,

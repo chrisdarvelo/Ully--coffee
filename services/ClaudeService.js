@@ -1,8 +1,10 @@
+import Constants from 'expo-constants';
+
 const API_URL = 'https://api.anthropic.com/v1/messages';
 
 class ClaudeService {
   constructor() {
-    this.apiKey = null;
+    this.apiKey = Constants.expoConfig?.extra?.claudeApiKey || null;
   }
 
   setApiKey(key) {
@@ -10,10 +12,8 @@ class ClaudeService {
   }
 
   async sendRequest(messages, maxTokens = 1024) {
-    if (!this.apiKey || this.apiKey === 'YOUR_CLAUDE_API_KEY_HERE') {
-      throw new Error(
-        'Claude API key not configured. Set your key in .env or DiagnosticScreen.js'
-      );
+    if (!this.apiKey) {
+      throw new Error('Claude API key not configured. Set CLAUDE_API_KEY in .env');
     }
 
     const response = await fetch(API_URL, {
