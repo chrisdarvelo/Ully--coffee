@@ -39,6 +39,31 @@ function AuthNavigator() {
   );
 }
 
+function TentIcon({ color, size }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 3L2 20h20L12 3z"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M12 3v17"
+        stroke={color}
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M9 20l3-7 3 7"
+        stroke={color}
+        strokeWidth={1.2}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 function ScanIcon({ color, size }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -72,7 +97,7 @@ function TabIcon({ label, focused }) {
   if (label === 'AI') {
     return (
       <View style={{ transform: [{ scale }] }}>
-        <CoffeeFlower size={22} />
+        <CoffeeFlower size={22} bold />
       </View>
     );
   }
@@ -94,13 +119,9 @@ function TabIcon({ label, focused }) {
   }
 
   return (
-    <Text style={{
-      fontSize: 22,
-      color,
-      transform: [{ scale }],
-    }}>
-      ⌂
-    </Text>
+    <View style={{ transform: [{ scale }] }}>
+      <TentIcon color={color} size={24} />
+    </View>
   );
 }
 
