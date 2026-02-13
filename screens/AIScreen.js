@@ -8,21 +8,11 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 
-let SpeechModule = null;
-let useSpeechEvent = () => {};
-try {
-  const speech = require('expo-speech-recognition');
-  SpeechModule = speech.ExpoSpeechRecognitionModule;
-  useSpeechEvent = speech.useSpeechRecognitionEvent;
-} catch (e) {
-  // Not available in Expo Go
-}
 
 function MicIcon({ color, size }) {
   return (
@@ -59,34 +49,9 @@ export default function AIScreen() {
   const [listening, setListening] = useState(false);
   const inputRef = useRef(null);
 
-  useSpeechEvent('result', (event) => {
-    const transcript = event.results[0]?.transcript || '';
-    setQuery(transcript);
-  });
-
-  useSpeechEvent('end', () => {
-    setListening(false);
-  });
-
-  useSpeechEvent('error', () => {
-    setListening(false);
-  });
-
-  const startListening = async () => {
-    if (!SpeechModule) {
-      Alert.alert('Not Available', 'Voice input requires a development build.');
-      return;
-    }
-    const { granted } = await SpeechModule.requestPermissionsAsync();
-    if (!granted) return;
-
-    setListening(true);
-    SpeechModule.start({ lang: 'en-US', interimResults: true });
-  };
-
-  const stopListening = () => {
-    if (SpeechModule) SpeechModule.stop();
-    setListening(false);
+  const toggleMic = () => {
+    // TODO: wire up expo-speech-recognition on dev build
+    setListening((v) => !v);
   };
 
   const handleSubmit = () => {
@@ -121,7 +86,7 @@ export default function AIScreen() {
           />
           <TouchableOpacity
             style={[styles.micButton, listening && styles.micButtonActive]}
-            onPress={listening ? stopListening : startListening}
+            onPress={toggleMic}
             activeOpacity={0.7}
           >
             <MicIcon
