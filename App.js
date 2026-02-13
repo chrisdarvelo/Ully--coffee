@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { onAuthStateChanged } from '@react-native-firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './services/FirebaseConfig';
 import { Colors, AuthColors } from './utils/constants';
 

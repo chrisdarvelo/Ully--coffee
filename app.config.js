@@ -45,8 +45,6 @@ export default {
             'Ully Coffee needs photo library access to analyze existing photos of equipment.',
         },
       ],
-      '@react-native-firebase/app',
-      '@react-native-firebase/auth',
     ],
     extra: {
       claudeApiKey: process.env.CLAUDE_API_KEY,

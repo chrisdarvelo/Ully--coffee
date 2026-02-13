@@ -11,7 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { createUserWithEmailAndPassword } from '@react-native-firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { AuthColors, Fonts } from '../utils/constants';
 
