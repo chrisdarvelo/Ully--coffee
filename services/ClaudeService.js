@@ -2,7 +2,7 @@ const API_URL = 'https://api.anthropic.com/v1/messages';
 
 class ClaudeService {
   constructor() {
-    this.apiKey = 'null';
+    this.apiKey = null;
   }
 
   setApiKey(key) {
