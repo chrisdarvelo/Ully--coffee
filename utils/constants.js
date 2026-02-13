@@ -1,0 +1,52 @@
+export const Colors = {
+  primary: '#c0783e',
+  background: '#1a1a2e',
+  card: '#2a2a3e',
+  text: '#f0f0f0',
+  textSecondary: '#a0a0b0',
+  success: '#2ecc71',
+  danger: '#e74c3c',
+  warning: '#f39c12',
+  info: '#3498db',
+};
+
+export const AuthColors = {
+  background: '#FFFFFF',
+  text: '#000000',
+  textSecondary: '#666666',
+  buttonFill: '#000000',
+  buttonText: '#FFFFFF',
+  buttonOutline: '#000000',
+  inputBorder: '#E0E0E0',
+  inputBackground: '#F8F8F8',
+  error: '#e74c3c',
+  link: '#c0783e',
+};
+
+export const DiagnosticTypes = {
+  extraction: {
+    label: 'Extraction Analysis',
+    icon: '☕',
+    description: 'Diagnose espresso extraction issues from flow pattern',
+  },
+  part: {
+    label: 'Part Identification',
+    icon: '🔧',
+    description: 'Identify coffee machine parts and find replacements',
+  },
+  water: {
+    label: 'Water Quality',
+    icon: '💧',
+    description: 'Analyze water test readings for optimal brewing',
+  },
+  grinder: {
+    label: 'Grinder Check',
+    icon: '⚙️',
+    description: 'Evaluate grinder burr condition and grind consistency',
+  },
+  dialin: {
+    label: 'Dial-In Assistant',
+    icon: '🎯',
+    description: 'Get suggestions to dial in your shot',
+  },
+};
