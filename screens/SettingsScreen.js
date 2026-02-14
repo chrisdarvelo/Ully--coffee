@@ -14,11 +14,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { getProfile, saveProfile } from '../services/ProfileService';
-import { getEquipment } from '../services/EquipmentService';
-import { Colors, AuthColors, Fonts, EquipmentTypes } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
-import { EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function SettingsScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -29,7 +27,6 @@ export default function SettingsScreen({ navigation: tabNav }) {
   const [location, setLocation] = useState('');
   const [shops, setShops] = useState([]);
   const [shopInput, setShopInput] = useState('');
-  const [equipItems, setEquipItems] = useState([]);
   const [avatarUri, setAvatarUri] = useState(null);
 
   const loadProfile = useCallback(async () => {
@@ -40,8 +37,6 @@ export default function SettingsScreen({ navigation: tabNav }) {
       setShops(profile.shops || []);
       setAvatarUri(profile.avatarUri || null);
     }
-    const items = await getEquipment(user.uid);
-    setEquipItems(items);
   }, [user]);
 
   useFocusEffect(
@@ -220,58 +215,6 @@ export default function SettingsScreen({ navigation: tabNav }) {
               <Text style={styles.saveBtnText}>Save</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.equipHeader}>
-          <Text style={styles.sectionTitle}>Equipment</Text>
-          <TouchableOpacity
-            style={styles.equipAddBtn}
-            onPress={() => navigation.navigate('EquipmentDetail')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.equipAddBtnText}>+</Text>
-          </TouchableOpacity>
-        </View>
-
-        {equipItems.length === 0 ? (
-          <TouchableOpacity
-            style={styles.equipEmptyCard}
-            onPress={() => navigation.navigate('EquipmentDetail')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.equipEmptyIconWrap}>
-              <EspressoMachineIcon size={24} color={Colors.text} />
-            </View>
-            <View style={styles.equipEmptyBody}>
-              <Text style={styles.equipEmptyTitle}>Add your first machine</Text>
-              <Text style={styles.equipEmptyHint}>Tap to register your coffee equipment</Text>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          equipItems.map((item) => {
-            const typeInfo = EquipmentTypes[item.type] || EquipmentTypes.machine;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.equipItem}
-                onPress={() => navigation.navigate('EquipmentDetail', { item })}
-                activeOpacity={0.7}
-              >
-                <View style={styles.equipItemIconWrap}>
-                  <EquipmentTypeIcon type={item.type} size={22} color={Colors.text} />
-                </View>
-                <View style={styles.equipItemBody}>
-                  <Text style={styles.equipItemName}>{item.name}</Text>
-                  <Text style={styles.equipItemDetail}>
-                    {typeInfo.label}{item.brand ? ` · ${item.brand}` : ''}{item.model ? ` · ${item.model}` : ''}
-                  </Text>
-                </View>
-                <Text style={styles.equipChevron}>›</Text>
-              </TouchableOpacity>
-            );
-          })
         )}
       </View>
 
@@ -523,91 +466,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: Fonts.mono,
-  },
-  equipHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  equipAddBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: AuthColors.buttonFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  equipAddBtnText: {
-    color: AuthColors.buttonText,
-    fontSize: 18,
-    fontWeight: '700',
-    fontFamily: Fonts.mono,
-    lineHeight: 20,
-  },
-  equipEmptyCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 10,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderStyle: 'dashed',
-  },
-  equipEmptyIconWrap: {
-    marginRight: 14,
-  },
-  equipEmptyBody: {
-    flex: 1,
-  },
-  equipEmptyTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.text,
-    fontFamily: Fonts.mono,
-  },
-  equipEmptyHint: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    marginTop: 2,
-  },
-  equipItem: {
-    backgroundColor: Colors.card,
-    borderRadius: 10,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  equipItemIconWrap: {
-    width: 22,
-    marginRight: 12,
-    alignItems: 'center',
-  },
-  equipItemBody: {
-    flex: 1,
-  },
-  equipItemName: {
-    fontSize: 14,
-    color: Colors.text,
-    fontFamily: Fonts.mono,
-    fontWeight: '600',
-  },
-  equipItemDetail: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    marginTop: 2,
-  },
-  equipChevron: {
-    fontSize: 18,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    paddingLeft: 8,
   },
   signOutRow: {
     backgroundColor: Colors.card,
