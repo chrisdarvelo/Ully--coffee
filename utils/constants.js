@@ -42,12 +42,12 @@ export const DiagnosticTypes = {
   extraction: {
     label: 'Extraction Analysis',
     icon: '☕',
-    description: 'Diagnose extraction issues and get dial-in suggestions',
+    description: 'Dial-in suggestions',
   },
   part: {
-    label: 'Part Identification',
+    label: 'Scan Equipment',
     icon: '🔧',
-    description: 'Identify coffee machine parts and find replacements',
+    description: 'Identify equipment related issues and get recommendations',
   },
   resources: {
     label: 'Resources',

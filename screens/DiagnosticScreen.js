@@ -23,7 +23,7 @@ export default function DiagnosticScreen({ route, navigation }) {
 
   const titles = {
     extraction: 'Extraction & Dial-In',
-    part: 'Photo of Part',
+    part: 'Scan',
     resources: 'Resources',
   };
 
