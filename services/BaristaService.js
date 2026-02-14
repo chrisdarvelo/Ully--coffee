@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const KEY_PREFIX = '@ully_baristas_';
+const FOLLOW_KEY_PREFIX = '@ully_barista_follows_';
 
-function baristaKey(uid) {
-  return `${KEY_PREFIX}${uid}`;
+function followKey(uid) {
+  return `${FOLLOW_KEY_PREFIX}${uid}`;
 }
 
-const STARTER_BARISTAS = [
+const CURATED_BARISTAS = [
   {
     id: 'barista_1',
     name: 'Lina Morales',
@@ -14,11 +14,16 @@ const STARTER_BARISTAS = [
     bio: 'World Latte Art champion. Specializes in single-origin pour overs and creative milk patterns.',
     avatarSeed: 7701,
     avatarColor: '#6B4226',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
-    recipes: ['Blossoms', 'Cascara Fizz'],
-    blogs: ['The Art of Pouring', 'Water Temperature Myths'],
+    avatarUrl: 'https://i.pravatar.cc/400?img=32',
+    recipes: [
+      { title: 'Blossoms', url: 'https://perfectdailygrind.com/latte-art-blossom/' },
+      { title: 'Cascara Fizz', url: 'https://perfectdailygrind.com/cascara-fizz-recipe/' },
+    ],
+    blogs: [
+      { title: 'The Art of Pouring', url: 'https://perfectdailygrind.com/the-art-of-pouring/' },
+      { title: 'Water Temperature Myths', url: 'https://perfectdailygrind.com/water-temperature-myths/' },
+    ],
     recommendations: ['Kalita Wave 185', 'Acaia Pearl Scale'],
-    addedAt: new Date().toISOString(),
   },
   {
     id: 'barista_2',
@@ -27,11 +32,16 @@ const STARTER_BARISTAS = [
     bio: 'Head roaster at Origin Labs. Known for dialing in light roasts on traditional Italian machines.',
     avatarSeed: 8802,
     avatarColor: '#2E4057',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/81.jpg',
-    recipes: ['E27', 'Nordic Light'],
-    blogs: ['Roast Profiles Decoded', 'Pressure Profiling 101'],
+    avatarUrl: 'https://i.pravatar.cc/400?img=68',
+    recipes: [
+      { title: 'E27', url: 'https://www.baristahustle.com/blog/e27-espresso/' },
+      { title: 'Nordic Light', url: 'https://www.baristahustle.com/blog/nordic-light-roast/' },
+    ],
+    blogs: [
+      { title: 'Roast Profiles Decoded', url: 'https://www.baristahustle.com/blog/roast-profiles/' },
+      { title: 'Pressure Profiling 101', url: 'https://www.baristahustle.com/blog/pressure-profiling/' },
+    ],
     recommendations: ['La Marzocco Linea Mini', 'Niche Zero'],
-    addedAt: new Date().toISOString(),
   },
   {
     id: 'barista_3',
@@ -40,11 +50,16 @@ const STARTER_BARISTAS = [
     bio: 'Pioneer of iced pour over and flash brew techniques. Runs a kissaten-style cafe in Kyoto.',
     avatarSeed: 9903,
     avatarColor: '#8B3A3A',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/79.jpg',
-    recipes: ['Funky Way', 'Flash Brew'],
-    blogs: ['Kissaten Culture', 'Ice & Extraction'],
+    avatarUrl: 'https://i.pravatar.cc/400?img=9',
+    recipes: [
+      { title: 'Funky Way', url: 'https://kurasu.kyoto/blogs/kurasu-journal/funky-way-recipe' },
+      { title: 'Flash Brew', url: 'https://kurasu.kyoto/blogs/kurasu-journal/flash-brew-recipe' },
+    ],
+    blogs: [
+      { title: 'Kissaten Culture', url: 'https://kurasu.kyoto/blogs/kurasu-journal/kissaten-culture' },
+      { title: 'Ice & Extraction', url: 'https://kurasu.kyoto/blogs/kurasu-journal/ice-and-extraction' },
+    ],
     recommendations: ['Hario V60', 'Fellow Stagg Kettle'],
-    addedAt: new Date().toISOString(),
   },
   {
     id: 'barista_4',
@@ -53,11 +68,16 @@ const STARTER_BARISTAS = [
     bio: 'Three-time national brewers cup finalist. Cupping judge and green coffee buyer.',
     avatarSeed: 1104,
     avatarColor: '#5B6E4E',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/32.jpg',
-    recipes: ['Aroma', 'Competition V60'],
-    blogs: ['Cupping Protocols', 'Buying Green Coffee'],
+    avatarUrl: 'https://i.pravatar.cc/400?img=5',
+    recipes: [
+      { title: 'Aroma', url: 'https://europeancoffeetrip.com/aroma-recipe/' },
+      { title: 'Competition V60', url: 'https://europeancoffeetrip.com/competition-v60/' },
+    ],
+    blogs: [
+      { title: 'Cupping Protocols', url: 'https://europeancoffeetrip.com/cupping-protocols/' },
+      { title: 'Buying Green Coffee', url: 'https://europeancoffeetrip.com/buying-green-coffee/' },
+    ],
     recommendations: ['Comandante C40', 'Origami Dripper'],
-    addedAt: new Date().toISOString(),
   },
   {
     id: 'barista_5',
@@ -66,40 +86,39 @@ const STARTER_BARISTAS = [
     bio: 'Fourth-generation Italian barista. Believes in the simplicity of a perfect ristretto.',
     avatarSeed: 2205,
     avatarColor: '#704214',
-    avatarUrl: 'https://randomuser.me/api/portraits/men/36.jpg',
-    recipes: ['Ristretto Classico', 'Cappuccino Tradizionale'],
-    blogs: ['Espresso Is Not a Science', 'The Perfect Crema'],
+    avatarUrl: 'https://i.pravatar.cc/400?img=14',
+    recipes: [
+      { title: 'Ristretto Classico', url: 'https://www.lacimbali.com/ristretto-classico/' },
+      { title: 'Cappuccino Tradizionale', url: 'https://www.lacimbali.com/cappuccino-tradizionale/' },
+    ],
+    blogs: [
+      { title: 'Espresso Is Not a Science', url: 'https://www.lacimbali.com/espresso-not-science/' },
+      { title: 'The Perfect Crema', url: 'https://www.lacimbali.com/perfect-crema/' },
+    ],
     recommendations: ['Mazzer Mini', 'IMS Precision Basket'],
-    addedAt: new Date().toISOString(),
   },
 ];
 
-export async function getBaristas(uid) {
+async function getFollowedIds(uid) {
   try {
-    const json = await AsyncStorage.getItem(baristaKey(uid));
-    if (json) {
-      const parsed = JSON.parse(json);
-      // Re-seed if avatar URLs are missing (data migration)
-      const needsMigration = parsed.some(
-        (b) => b.id?.startsWith('barista_') && !b.avatarUrl
-      );
-      if (needsMigration) {
-        const urlMap = {};
-        STARTER_BARISTAS.forEach((s) => { urlMap[s.id] = s.avatarUrl; });
-        const migrated = parsed.map((b) => ({
-          ...b,
-          avatarUrl: b.avatarUrl || urlMap[b.id] || null,
-        }));
-        await AsyncStorage.setItem(baristaKey(uid), JSON.stringify(migrated));
-        return migrated;
-      }
-      return parsed;
-    }
-    await AsyncStorage.setItem(baristaKey(uid), JSON.stringify(STARTER_BARISTAS));
-    return STARTER_BARISTAS;
+    const json = await AsyncStorage.getItem(followKey(uid));
+    return json ? JSON.parse(json) : [];
   } catch {
     return [];
   }
+}
+
+async function setFollowedIds(uid, ids) {
+  await AsyncStorage.setItem(followKey(uid), JSON.stringify(ids));
+}
+
+export async function getBaristas(uid) {
+  const followedIds = uid ? await getFollowedIds(uid) : [];
+  const followedSet = new Set(followedIds);
+  return CURATED_BARISTAS.map((b) => ({
+    ...b,
+    followed: followedSet.has(b.id),
+  }));
 }
 
 export async function getBarista(uid, baristaId) {
@@ -107,27 +126,34 @@ export async function getBarista(uid, baristaId) {
   return baristas.find((b) => b.id === baristaId) || null;
 }
 
-export async function saveBarista(uid, barista) {
-  const baristas = await getBaristas(uid);
-  const index = baristas.findIndex((b) => b.id === barista.id);
+export async function toggleFollow(uid, baristaId) {
+  const ids = await getFollowedIds(uid);
+  const index = ids.indexOf(baristaId);
   if (index >= 0) {
-    baristas[index] = { ...baristas[index], ...barista };
+    ids.splice(index, 1);
   } else {
-    baristas.push({
-      ...barista,
-      id: barista.id || `barista_${Date.now()}`,
-      avatarSeed: barista.avatarSeed || Math.floor(Math.random() * 10000),
-      avatarColor: barista.avatarColor || '#6B4226',
-      addedAt: new Date().toISOString(),
-    });
+    ids.push(baristaId);
   }
-  await AsyncStorage.setItem(baristaKey(uid), JSON.stringify(baristas));
-  return baristas;
+  await setFollowedIds(uid, ids);
+  return index < 0; // returns new followed state
 }
 
-export async function removeBarista(uid, baristaId) {
-  const baristas = await getBaristas(uid);
-  const filtered = baristas.filter((b) => b.id !== baristaId);
-  await AsyncStorage.setItem(baristaKey(uid), JSON.stringify(filtered));
-  return filtered;
+export async function getFollowedBlogPosts(uid) {
+  const followedIds = await getFollowedIds(uid);
+  const followedSet = new Set(followedIds);
+  const posts = [];
+  for (const barista of CURATED_BARISTAS) {
+    if (!followedSet.has(barista.id)) continue;
+    for (const blog of barista.blogs) {
+      posts.push({
+        title: blog.title,
+        url: blog.url,
+        source: barista.name,
+        baristaAvatarUrl: barista.avatarUrl,
+        baristaAvatarColor: barista.avatarColor,
+        baristaId: barista.id,
+      });
+    }
+  }
+  return posts;
 }

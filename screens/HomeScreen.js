@@ -15,8 +15,7 @@ import { getProfile } from '../services/ProfileService';
 import { getNews } from '../services/NewsService';
 import { getRecipes } from '../services/RecipeService';
 import { getCafes } from '../services/CafeService';
-import { getBaristas } from '../services/BaristaService';
-import { getBlogs } from '../services/BlogService';
+import { getBaristas, getFollowedBlogPosts } from '../services/BaristaService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 import SectionRow from '../components/SectionRow';
@@ -25,19 +24,6 @@ import SideDrawer from '../components/SideDrawer';
 
 const CARD_WIDTH = 150;
 const CARD_HEIGHT = 200;
-
-const BLOGGER_AVATARS = [
-  'https://randomuser.me/api/portraits/men/52.jpg',
-  'https://randomuser.me/api/portraits/women/65.jpg',
-  'https://randomuser.me/api/portraits/men/22.jpg',
-  'https://randomuser.me/api/portraits/women/17.jpg',
-  'https://randomuser.me/api/portraits/men/45.jpg',
-  'https://randomuser.me/api/portraits/women/28.jpg',
-  'https://randomuser.me/api/portraits/men/67.jpg',
-  'https://randomuser.me/api/portraits/women/41.jpg',
-  'https://randomuser.me/api/portraits/men/33.jpg',
-  'https://randomuser.me/api/portraits/women/55.jpg',
-];
 
 const CAFE_IMAGES = [
   'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=300&h=200&fit=crop',
@@ -89,7 +75,7 @@ export default function HomeScreen() {
       uid ? getRecipes(uid) : [],
       uid ? getBaristas(uid) : [],
       uid ? getCafes(uid) : [],
-      getBlogs(),
+      uid ? getFollowedBlogPosts(uid) : [],
     ]);
     setProfile(prof);
     setNews(articles);
@@ -125,16 +111,6 @@ export default function HomeScreen() {
       navigation.navigate('Profile');
     } else if (key === 'resources') {
       navigation.getParent().navigate('Diagnostic', { type: 'resources' });
-    }
-  };
-
-
-  const formatDate = (iso) => {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    } catch {
-      return '';
     }
   };
 
@@ -207,21 +183,20 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderBlogCard = ({ item, index }) => (
+  const renderBlogCard = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => Linking.openURL(item.link)}
+      onPress={() => Linking.openURL(item.url)}
       activeOpacity={0.7}
     >
       <View style={styles.blogHeader}>
         <Image
-          source={{ uri: BLOGGER_AVATARS[index % BLOGGER_AVATARS.length] }}
+          source={{ uri: item.baristaAvatarUrl }}
           style={styles.bloggerAvatar}
         />
         <Text style={styles.cardSource}>{item.source}</Text>
       </View>
       <Text style={styles.blogTitle} numberOfLines={4}>{item.title}</Text>
-      <Text style={styles.cardDate}>{formatDate(item.date)}</Text>
     </TouchableOpacity>
   );
 
@@ -285,7 +260,6 @@ export default function HomeScreen() {
             data={baristas}
             renderItem={renderBaristaCard}
             keyExtractor={(item) => item.id}
-            onAdd={() => navigation.navigate('BaristaDetail', { isNew: true })}
           />
         </View>
 
@@ -299,14 +273,16 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View>
-          <SectionRow
-            title="Blogs"
-            data={blogs}
-            renderItem={renderBlogCard}
-            keyExtractor={(item, i) => `blog-${i}`}
-          />
-        </View>
+        {blogs.length > 0 && (
+          <View>
+            <SectionRow
+              title="Blogs"
+              data={blogs}
+              renderItem={renderBlogCard}
+              keyExtractor={(item, i) => `blog-${i}`}
+            />
+          </View>
+        )}
       </ScrollView>
 
       <SideDrawer
@@ -414,12 +390,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: Fonts.mono,
     marginTop: 4,
-  },
-  cardDate: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    marginTop: 'auto',
   },
   blogHeader: {
     flexDirection: 'row',
