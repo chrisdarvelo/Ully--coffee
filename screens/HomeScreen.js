@@ -263,15 +263,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <View onLayout={onSectionLayout('news')}>
-          <SectionRow
-            title="Daily News"
-            data={news}
-            renderItem={renderNewsCard}
-            keyExtractor={(item, i) => `news-${i}`}
-          />
-        </View>
-
         <View onLayout={onSectionLayout('recipes')}>
           <SectionRow
             title="Your Recipes"
@@ -279,6 +270,15 @@ export default function HomeScreen() {
             renderItem={renderRecipeCard}
             keyExtractor={(item) => item.id}
             onAdd={() => navigation.navigate('RecipeDetail', { isNew: true })}
+          />
+        </View>
+
+        <View onLayout={onSectionLayout('news')}>
+          <SectionRow
+            title="Daily News"
+            data={news}
+            renderItem={renderNewsCard}
+            keyExtractor={(item, i) => `news-${i}`}
           />
         </View>
 
