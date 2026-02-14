@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 90,
+    paddingTop: 72,
     paddingBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',

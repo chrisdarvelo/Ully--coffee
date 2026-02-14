@@ -201,7 +201,9 @@ export default function DiagnosticScreen({ route, navigation }) {
               style={styles.photoButton}
               onPress={() => setShowCamera(true)}
             >
-              <Text style={styles.photoButtonText}>Take Photo</Text>
+              <Text style={styles.photoButtonText}>
+                {type === 'part' ? 'Scan Part' : 'Take Photo'}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -209,7 +211,7 @@ export default function DiagnosticScreen({ route, navigation }) {
               onPress={pickImage}
             >
               <Text style={[styles.photoButtonText, { color: Colors.text }]}>
-                Choose from Library
+                {type === 'part' ? 'Upload Photo' : 'Choose from Library'}
               </Text>
             </TouchableOpacity>
           </View>
