@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
   Alert,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 import { signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
+import { getProfile, saveProfile } from '../services/ProfileService';
 import { Colors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 
@@ -16,6 +18,23 @@ export default function SettingsScreen() {
   const user = auth.currentUser;
   const name = user?.email ? user.email.split('@')[0] : 'User';
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [location, setLocation] = useState('');
+  const [shops, setShops] = useState([]);
+  const [shopInput, setShopInput] = useState('');
+
+  const loadProfile = useCallback(async () => {
+    if (!user) return;
+    const profile = await getProfile(user.uid);
+    if (profile) {
+      setLocation(profile.location || '');
+      setShops(profile.shops || []);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleSignOut = async () => {
     try {
@@ -42,6 +61,23 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleSaveProfile = async () => {
+    await saveProfile(user.uid, { location: location.trim(), shops });
+    setEditing(false);
+  };
+
+  const addShop = () => {
+    const trimmed = shopInput.trim();
+    if (trimmed && !shops.includes(trimmed)) {
+      setShops([...shops, trimmed]);
+      setShopInput('');
+    }
+  };
+
+  const removeShop = (index) => {
+    setShops(shops.filter((_, i) => i !== index));
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -64,6 +100,76 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Profile</Text>
+
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => setEditing(!editing)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.rowIcon}>&#9998;</Text>
+          <View style={styles.rowBody}>
+            <Text style={styles.rowText}>Edit Profile</Text>
+            <Text style={styles.rowHint}>
+              {location ? `${location}` : 'Set your location and favorite shops'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        {editing && (
+          <View style={styles.editSection}>
+            <Text style={styles.editLabel}>Location</Text>
+            <TextInput
+              style={styles.editInput}
+              value={location}
+              onChangeText={setLocation}
+              placeholder="City or town"
+              placeholderTextColor={Colors.textSecondary}
+            />
+
+            <Text style={[styles.editLabel, { marginTop: 16 }]}>
+              Favorite Shops
+            </Text>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[styles.editInput, { flex: 1 }]}
+                value={shopInput}
+                onChangeText={setShopInput}
+                placeholder="Add a shop"
+                placeholderTextColor={Colors.textSecondary}
+                returnKeyType="done"
+                onSubmitEditing={addShop}
+              />
+              <TouchableOpacity
+                style={[styles.addBtn, !shopInput.trim() && styles.addBtnDisabled]}
+                onPress={addShop}
+                disabled={!shopInput.trim()}
+              >
+                <Text style={styles.addBtnText}>+</Text>
+              </TouchableOpacity>
+            </View>
+
+            {shops.map((shop, i) => (
+              <View key={i} style={styles.shopRow}>
+                <Text style={styles.shopName}>{shop}</Text>
+                <TouchableOpacity onPress={() => removeShop(i)}>
+                  <Text style={styles.shopRemove}>x</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            <TouchableOpacity
+              style={styles.saveBtn}
+              onPress={handleSaveProfile}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.saveBtnText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Settings</Text>
 
         <TouchableOpacity
@@ -71,7 +177,7 @@ export default function SettingsScreen() {
           onPress={handlePasswordReset}
           activeOpacity={0.7}
         >
-          <Text style={styles.rowIcon}>🔑</Text>
+          <Text style={styles.rowIcon}>&#128273;</Text>
           <View style={styles.rowBody}>
             <Text style={styles.rowText}>Reset Password</Text>
             <Text style={styles.rowHint}>Sends a reset link to your email</Text>
@@ -83,7 +189,7 @@ export default function SettingsScreen() {
           activeOpacity={0.7}
           disabled
         >
-          <Text style={styles.rowIcon}>🔔</Text>
+          <Text style={styles.rowIcon}>&#128276;</Text>
           <View style={styles.rowBody}>
             <Text style={styles.rowText}>Notifications</Text>
             <Text style={styles.rowHint}>Coming soon</Text>
@@ -95,7 +201,7 @@ export default function SettingsScreen() {
           activeOpacity={0.7}
           disabled
         >
-          <Text style={styles.rowIcon}>📐</Text>
+          <Text style={styles.rowIcon}>&#128208;</Text>
           <View style={styles.rowBody}>
             <Text style={styles.rowText}>Units & Preferences</Text>
             <Text style={styles.rowHint}>Coming soon</Text>
@@ -206,6 +312,85 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: Fonts.mono,
     marginTop: 2,
+  },
+  editSection: {
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 8,
+  },
+  editLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  editInput: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    fontFamily: Fonts.mono,
+    color: Colors.text,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  addBtn: {
+    backgroundColor: Colors.text,
+    borderRadius: 8,
+    width: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addBtnDisabled: {
+    opacity: 0.4,
+  },
+  addBtnText: {
+    color: Colors.background,
+    fontSize: 20,
+    fontWeight: '700',
+    fontFamily: Fonts.mono,
+  },
+  shopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  shopName: {
+    flex: 1,
+    fontSize: 14,
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+  },
+  shopRemove: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    paddingLeft: 10,
+  },
+  saveBtn: {
+    backgroundColor: Colors.text,
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  saveBtnText: {
+    color: Colors.background,
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: Fonts.mono,
   },
   signOutRow: {
     backgroundColor: Colors.card,

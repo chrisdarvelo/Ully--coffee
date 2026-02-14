@@ -7,15 +7,20 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './services/FirebaseConfig';
 import { Colors, AuthColors, Fonts } from './utils/constants';
+import { isOnboarded } from './services/ProfileService';
 import CoffeeFlower from './components/CoffeeFlower';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 
 import HomeScreen from './screens/HomeScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 import TroubleshootScreen from './screens/TroubleshootScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import AIScreen from './screens/AIScreen';
 import DiagnosticScreen from './screens/DiagnosticScreen';
 import ResultScreen from './screens/ResultScreen';
+import RecipeDetailScreen from './screens/RecipeDetailScreen';
+import BaristaDetailScreen from './screens/BaristaDetailScreen';
+import CafeDetailScreen from './screens/CafeDetailScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
@@ -198,9 +203,10 @@ function TabNavigator() {
   );
 }
 
-function AppNavigator() {
+function AppNavigator({ onboarded }) {
   return (
     <AppStack.Navigator
+      initialRouteName={onboarded ? 'Tabs' : 'Onboarding'}
       screenOptions={{
         headerStyle: { backgroundColor: Colors.background },
         headerTintColor: Colors.text,
@@ -209,6 +215,11 @@ function AppNavigator() {
         headerShadowVisible: false,
       }}
     >
+      <AppStack.Screen
+        name="Onboarding"
+        component={OnboardingScreen}
+        options={{ headerShown: false }}
+      />
       <AppStack.Screen
         name="Tabs"
         component={TabNavigator}
@@ -224,6 +235,21 @@ function AppNavigator() {
         component={ResultScreen}
         options={{ title: 'Results' }}
       />
+      <AppStack.Screen
+        name="RecipeDetail"
+        component={RecipeDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <AppStack.Screen
+        name="BaristaDetail"
+        component={BaristaDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <AppStack.Screen
+        name="CafeDetail"
+        component={CafeDetailScreen}
+        options={{ title: 'Cafe' }}
+      />
     </AppStack.Navigator>
   );
 }
@@ -231,11 +257,18 @@ function AppNavigator() {
 export default function App() {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [onboarded, setOnboarded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        const done = await isOnboarded(currentUser.uid);
+        setOnboarded(done);
+      } else {
+        setOnboarded(false);
+      }
       if (initializing) setInitializing(false);
     });
     return unsubscribe;
@@ -264,7 +297,7 @@ export default function App() {
     <Animated.View style={[styles.root, { opacity: fadeAnim }]}>
       <StatusBar style="dark" />
       <NavigationContainer>
-        {user ? <AppNavigator /> : <AuthNavigator />}
+        {user ? <AppNavigator onboarded={onboarded} /> : <AuthNavigator />}
       </NavigationContainer>
     </Animated.View>
   );
