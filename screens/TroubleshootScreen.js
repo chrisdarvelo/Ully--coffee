@@ -11,6 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { auth } from '../services/FirebaseConfig';
 import { getEquipment } from '../services/EquipmentService';
 import { Colors, Fonts, DiagnosticTypes, EquipmentTypes } from '../utils/constants';
+import { PortafilterIcon, SearchIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function TroubleshootScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -26,14 +27,13 @@ export default function TroubleshootScreen({ navigation: tabNav }) {
   );
 
   const renderEquipmentCard = ({ item }) => {
-    const typeInfo = EquipmentTypes[item.type] || EquipmentTypes.machine;
     return (
       <TouchableOpacity
         style={styles.equipCard}
         onPress={() => navigation.navigate('EquipmentDetail', { item })}
         activeOpacity={0.7}
       >
-        <Text style={styles.equipIcon}>{typeInfo.icon}</Text>
+        <EquipmentTypeIcon type={item.type} size={26} color={Colors.text} />
         <Text style={styles.equipName} numberOfLines={1}>{item.name}</Text>
         {item.brand ? <Text style={styles.equipBrand} numberOfLines={1}>{item.brand}</Text> : null}
       </TouchableOpacity>
@@ -85,20 +85,28 @@ export default function TroubleshootScreen({ navigation: tabNav }) {
       </View>
 
       <View style={styles.grid}>
-        {Object.entries(DiagnosticTypes).map(([key, value]) => (
-          <TouchableOpacity
-            key={key}
-            style={styles.card}
-            onPress={() => navigation.navigate('Diagnostic', { type: key })}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.cardIcon}>{value.icon}</Text>
-            <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{value.label}</Text>
-              <Text style={styles.cardDescription}>{value.description}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {Object.entries(DiagnosticTypes).map(([key, value]) => {
+          const svgIcons = {
+            extraction: <PortafilterIcon size={28} color={Colors.text} />,
+            part: <SearchIcon size={28} color={Colors.text} />,
+          };
+          return (
+            <TouchableOpacity
+              key={key}
+              style={styles.card}
+              onPress={() => navigation.navigate('Diagnostic', { type: key })}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardIconWrap}>
+                {svgIcons[key] || <Text style={styles.cardIcon}>{value.icon}</Text>}
+              </View>
+              <View style={styles.cardBody}>
+                <Text style={styles.cardTitle}>{value.label}</Text>
+                <Text style={styles.cardDescription}>{value.description}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </ScrollView>
   );
@@ -174,8 +182,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  equipIcon: {
-    fontSize: 26,
+  equipIconWrap: {
     marginBottom: 6,
   },
   equipName: {
@@ -236,9 +243,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  cardIconWrap: {
+    width: 28,
+    height: 28,
+    marginRight: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   cardIcon: {
     fontSize: 28,
-    marginRight: 14,
   },
   cardBody: {
     flex: 1,

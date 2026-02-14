@@ -13,6 +13,7 @@ import {
 import { auth } from '../services/FirebaseConfig';
 import { saveEquipmentItem, removeEquipmentItem } from '../services/EquipmentService';
 import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function EquipmentDetailScreen({ route, navigation }) {
   const existing = route.params?.item;
@@ -78,7 +79,11 @@ export default function EquipmentDetailScreen({ route, navigation }) {
               onPress={() => setType(key)}
               activeOpacity={0.7}
             >
-              <Text style={styles.typeIcon}>{val.icon}</Text>
+              <EquipmentTypeIcon
+                type={key}
+                size={22}
+                color={type === key ? Colors.background : Colors.text}
+              />
               <Text style={[styles.typeLabel, type === key && styles.typeLabelActive]}>
                 {val.label}
               </Text>

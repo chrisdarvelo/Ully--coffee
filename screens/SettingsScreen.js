@@ -17,6 +17,7 @@ import { getProfile, saveProfile } from '../services/ProfileService';
 import { getEquipment } from '../services/EquipmentService';
 import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function SettingsScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -238,7 +239,9 @@ export default function SettingsScreen({ navigation: tabNav }) {
                 onPress={() => navigation.navigate('EquipmentDetail', { item })}
                 activeOpacity={0.7}
               >
-                <Text style={styles.equipItemIcon}>{typeInfo.icon}</Text>
+                <View style={styles.equipItemIconWrap}>
+                  <EquipmentTypeIcon type={item.type} size={22} color={Colors.text} />
+                </View>
                 <View style={styles.equipItemBody}>
                   <Text style={styles.equipItemName}>{item.name}</Text>
                   <Text style={styles.equipItemDetail}>
@@ -561,9 +564,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  equipItemIcon: {
-    fontSize: 22,
+  equipItemIconWrap: {
+    width: 22,
     marginRight: 12,
+    alignItems: 'center',
   },
   equipItemBody: {
     flex: 1,

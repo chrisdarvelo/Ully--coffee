@@ -13,6 +13,7 @@ import { auth } from '../services/FirebaseConfig';
 import { saveProfile } from '../services/ProfileService';
 import { saveEquipmentItem } from '../services/EquipmentService';
 import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
 import PaperBackground from '../components/PaperBackground';
 import CoffeeFlower from '../components/CoffeeFlower';
 
@@ -196,7 +197,7 @@ export default function OnboardingScreen({ navigation }) {
 
           {Object.entries(EquipmentTypes).map(([key, val]) => (
             <View key={key} style={styles.equipRow}>
-              <Text style={styles.equipIcon}>{val.icon}</Text>
+              <EquipmentTypeIcon type={key} size={24} color={Colors.text} />
               <TextInput
                 style={[styles.input, styles.inputFlex]}
                 value={equipNames[key]}
