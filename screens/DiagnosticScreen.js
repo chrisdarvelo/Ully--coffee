@@ -136,14 +136,21 @@ export default function DiagnosticScreen({ route, navigation }) {
             <View style={styles.instructionBox}>
               <Text style={styles.instructionBoxText}>{instructions[type]}</Text>
             </View>
+
+            <View style={styles.scanFrame}>
+              <View style={[styles.scanCorner, styles.scanTopLeft]} />
+              <View style={[styles.scanCorner, styles.scanTopRight]} />
+              <View style={[styles.scanCorner, styles.scanBottomLeft]} />
+              <View style={[styles.scanCorner, styles.scanBottomRight]} />
+            </View>
           </View>
 
           <View style={styles.cameraControls}>
             <TouchableOpacity
-              style={styles.cancelButton}
+              style={styles.backButton}
               onPress={() => setShowCamera(false)}
             >
-              <Text style={styles.controlButtonText}>Cancel</Text>
+              <Text style={styles.backButtonText}>{'\u2190'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -203,7 +210,7 @@ export default function DiagnosticScreen({ route, navigation }) {
               onPress={() => setShowCamera(true)}
             >
               <Text style={styles.photoButtonText}>
-                {type === 'part' ? 'Scan Part' : 'Take Photo'}
+                {type === 'part' ? 'Scan' : 'Take Photo'}
               </Text>
             </TouchableOpacity>
 
@@ -348,18 +355,50 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingBottom: 50,
   },
-  cancelButton: {
-    backgroundColor: '#333',
-    padding: 15,
-    borderRadius: 8,
-    width: 80,
+  backButton: {
+    padding: 10,
+    width: 48,
     alignItems: 'center',
   },
-  controlButtonText: {
+  backButtonText: {
     color: '#fff',
-    fontSize: 15,
-    fontWeight: 'bold',
-    fontFamily: Fonts.mono,
+    fontSize: 28,
+  },
+  scanFrame: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 40,
+  },
+  scanCorner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: '#fff',
+  },
+  scanTopLeft: {
+    top: 0,
+    left: 30,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+  },
+  scanTopRight: {
+    top: 0,
+    right: 30,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+  },
+  scanBottomLeft: {
+    bottom: 0,
+    left: 30,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+  },
+  scanBottomRight: {
+    bottom: 0,
+    right: 30,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
   },
   captureButton: {
     width: 72,
