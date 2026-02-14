@@ -130,7 +130,8 @@ export default function DiagnosticScreen({ route, navigation }) {
   if (showCamera) {
     return (
       <View style={{ flex: 1, backgroundColor: '#000' }}>
-        <CameraView style={styles.camera} ref={cameraRef} facing="back">
+        <CameraView style={styles.camera} ref={cameraRef} facing="back" />
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           <View style={styles.cameraOverlay}>
             <View style={styles.instructionBox}>
               <Text style={styles.instructionBoxText}>{instructions[type]}</Text>
@@ -154,7 +155,7 @@ export default function DiagnosticScreen({ route, navigation }) {
 
             <View style={{ width: 80 }} />
           </View>
-        </CameraView>
+        </View>
       </View>
     );
   }

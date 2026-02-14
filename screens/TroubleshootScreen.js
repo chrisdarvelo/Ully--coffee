@@ -11,7 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { auth } from '../services/FirebaseConfig';
 import { getEquipment } from '../services/EquipmentService';
 import { Colors, Fonts, DiagnosticTypes, EquipmentTypes } from '../utils/constants';
-import { PortafilterIcon, SearchIcon, EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
+import { PortafilterIcon, ScanIcon, EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function TroubleshootScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -44,7 +44,6 @@ export default function TroubleshootScreen({ navigation: tabNav }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <Text style={styles.title}>Troubleshoot</Text>
-        <Text style={styles.subtitle}>Pick a diagnostic to get started</Text>
       </View>
 
       {/* Equipment Section */}
@@ -90,7 +89,7 @@ export default function TroubleshootScreen({ navigation: tabNav }) {
         {Object.entries(DiagnosticTypes).map(([key, value]) => {
           const svgIcons = {
             extraction: <PortafilterIcon size={28} color={Colors.text} />,
-            part: <SearchIcon size={28} color={Colors.text} />,
+            part: <ScanIcon size={28} color={Colors.text} />,
           };
           return (
             <TouchableOpacity
@@ -125,19 +124,13 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 24,
     paddingTop: 90,
-    paddingBottom: 8,
+    paddingBottom: 2,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
     color: Colors.text,
     fontFamily: Fonts.mono,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    marginTop: 4,
   },
   equipSection: {
     paddingTop: 16,
