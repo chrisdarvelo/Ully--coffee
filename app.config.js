@@ -63,6 +63,8 @@ export default {
       firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       firebaseAppId: process.env.FIREBASE_APP_ID,
+      appCheckSiteKey: process.env.APP_CHECK_SITE_KEY,
+      appCheckDebugToken: process.env.APP_CHECK_DEBUG_TOKEN,
     },
   },
 };

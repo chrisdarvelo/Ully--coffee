@@ -1,6 +1,8 @@
 import Constants from 'expo-constants';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
+const REQUEST_TIMEOUT_MS = 15000;
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 class ClaudeService {
   constructor() {
@@ -11,24 +13,49 @@ class ClaudeService {
     this.apiKey = key;
   }
 
+  /**
+   * Validates that a base64 image string doesn't exceed the size cap.
+   * Base64 encoding inflates size by ~33%, so we check the decoded size.
+   */
+  validateImageSize(base64Data) {
+    const estimatedBytes = (base64Data.length * 3) / 4;
+    if (estimatedBytes > MAX_IMAGE_SIZE_BYTES) {
+      throw new Error('Image is too large. Please use an image under 5MB.');
+    }
+  }
+
   async sendRequest(messages, maxTokens = 1024) {
     if (!this.apiKey) {
       throw new Error('Claude API key not configured. Set CLAUDE_API_KEY in .env');
     }
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: maxTokens,
-        messages,
-      }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    let response;
+    try {
+      response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: maxTokens,
+          messages,
+        }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const error = await response.text();
@@ -36,10 +63,14 @@ class ClaudeService {
     }
 
     const data = await response.json();
+    if (!data?.content?.[0]?.text) {
+      throw new Error('Unexpected response from Claude API.');
+    }
     return data.content[0].text;
   }
 
   async diagnoseExtraction(base64Image, machineModel, context) {
+    this.validateImageSize(base64Image);
     const messages = [
       {
         role: 'user',
@@ -88,6 +119,7 @@ User: ${text}`,
   }
 
   async identifyPart(base64Image) {
+    this.validateImageSize(base64Image);
     const messages = [
       {
         role: 'user',

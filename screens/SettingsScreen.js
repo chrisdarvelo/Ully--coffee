@@ -16,6 +16,7 @@ import { auth } from '../services/FirebaseConfig';
 import { getProfile, saveProfile } from '../services/ProfileService';
 import { getEquipment } from '../services/EquipmentService';
 import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { sanitizeText } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
 import { EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
@@ -75,12 +76,15 @@ export default function SettingsScreen({ navigation: tabNav }) {
   };
 
   const handleSaveProfile = async () => {
-    await saveProfile(user.uid, { location: location.trim(), shops });
+    await saveProfile(user.uid, {
+      location: sanitizeText(location, 100),
+      shops: shops.map((s) => sanitizeText(s, 100)),
+    });
     setEditing(false);
   };
 
   const addShop = () => {
-    const trimmed = shopInput.trim();
+    const trimmed = sanitizeText(shopInput, 100);
     if (trimmed && !shops.includes(trimmed)) {
       setShops([...shops, trimmed]);
       setShopInput('');

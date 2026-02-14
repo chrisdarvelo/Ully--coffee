@@ -11,6 +11,7 @@ import {
 import { auth } from '../services/FirebaseConfig';
 import { addCafe, saveCafe, removeCafe } from '../services/CafeService';
 import { Colors, Fonts } from '../utils/constants';
+import { sanitizeText } from '../utils/validation';
 
 export default function CafeDetailScreen({ route, navigation }) {
   const cafe = route.params?.cafe;
@@ -28,16 +29,16 @@ export default function CafeDetailScreen({ route, navigation }) {
     }
     if (isNew) {
       await addCafe(uid, {
-        name: name.trim(),
-        location: location.trim(),
-        notes: notes.trim(),
+        name: sanitizeText(name, 100),
+        location: sanitizeText(location, 200),
+        notes: sanitizeText(notes, 500),
       });
     } else {
       await saveCafe(uid, {
         ...cafe,
-        name: name.trim(),
-        location: location.trim(),
-        notes: notes.trim(),
+        name: sanitizeText(name, 100),
+        location: sanitizeText(location, 200),
+        notes: sanitizeText(notes, 500),
       });
     }
     navigation.goBack();

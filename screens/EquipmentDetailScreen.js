@@ -13,6 +13,7 @@ import {
 import { auth } from '../services/FirebaseConfig';
 import { saveEquipmentItem, removeEquipmentItem } from '../services/EquipmentService';
 import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { sanitizeText } from '../utils/validation';
 import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function EquipmentDetailScreen({ route, navigation }) {
@@ -36,10 +37,10 @@ export default function EquipmentDetailScreen({ route, navigation }) {
       const item = {
         id: existing?.id || Date.now().toString(),
         type,
-        name: name.trim(),
-        brand: brand.trim(),
-        model: model.trim(),
-        notes: notes.trim(),
+        name: sanitizeText(name, 100),
+        brand: sanitizeText(brand, 100),
+        model: sanitizeText(model, 100),
+        notes: sanitizeText(notes, 500),
         addedAt: existing?.addedAt || new Date().toISOString(),
       };
       await saveEquipmentItem(uid, item);

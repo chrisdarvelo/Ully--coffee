@@ -10,9 +10,10 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { AuthColors, Fonts } from '../utils/constants';
+import { validatePassword, validateEmail } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
 
 export default function SignUpScreen({ navigation }) {
@@ -27,19 +28,26 @@ export default function SignUpScreen({ navigation }) {
       return;
     }
 
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match.');
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters.');
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.valid) {
+      Alert.alert('Weak Password', passwordCheck.message);
       return;
     }
 
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      await sendEmailVerification(user);
     } catch (error) {
       let message = 'An error occurred. Please try again.';
       if (error.code === 'auth/email-already-in-use') {

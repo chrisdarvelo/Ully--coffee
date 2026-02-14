@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Animated, View, Text, StyleSheet } from 'react-native';
+import { Animated, AppState, View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './services/FirebaseConfig';
 import { Colors, AuthColors, Fonts } from './utils/constants';
 import { isOnboarded } from './services/ProfileService';
+import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import CoffeeFlower from './components/CoffeeFlower';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 
@@ -260,25 +261,47 @@ function AppNavigator({ onboarded }) {
   );
 }
 
+const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [onboarded, setOnboarded] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const backgroundedAt = useRef(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        setEmailVerified(currentUser.emailVerified);
         const done = await isOnboarded(currentUser.uid);
         setOnboarded(done);
       } else {
         setOnboarded(false);
+        setEmailVerified(false);
       }
       if (initializing) setInitializing(false);
     });
     return unsubscribe;
   }, [initializing]);
+
+  // Session inactivity timeout
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'background' || nextState === 'inactive') {
+        backgroundedAt.current = Date.now();
+      } else if (nextState === 'active' && backgroundedAt.current) {
+        const elapsed = Date.now() - backgroundedAt.current;
+        backgroundedAt.current = null;
+        if (elapsed > SESSION_TIMEOUT_MS && auth.currentUser) {
+          signOut(auth);
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (!initializing) {
@@ -303,7 +326,15 @@ export default function App() {
     <Animated.View style={[styles.root, { opacity: fadeAnim }]}>
       <StatusBar style="dark" />
       <NavigationContainer>
-        {user ? <AppNavigator onboarded={onboarded} /> : <AuthNavigator />}
+        {user ? (
+          emailVerified ? (
+            <AppNavigator onboarded={onboarded} />
+          ) : (
+            <VerifyEmailScreen onVerified={() => setEmailVerified(true)} />
+          )
+        ) : (
+          <AuthNavigator />
+        )}
       </NavigationContainer>
     </Animated.View>
   );
