@@ -11,7 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { auth } from '../services/FirebaseConfig';
 import { getEquipment } from '../services/EquipmentService';
 import { Colors, Fonts, DiagnosticTypes, EquipmentTypes } from '../utils/constants';
-import { PortafilterIcon, SearchIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
+import { PortafilterIcon, SearchIcon, EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function TroubleshootScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -66,7 +66,9 @@ export default function TroubleshootScreen({ navigation: tabNav }) {
             onPress={() => navigation.navigate('EquipmentDetail')}
             activeOpacity={0.7}
           >
-            <Text style={styles.emptyIcon}>☕</Text>
+            <View style={styles.emptyIconWrap}>
+              <EspressoMachineIcon size={28} color={Colors.text} />
+            </View>
             <View style={styles.emptyBody}>
               <Text style={styles.emptyTitle}>Add your first machine</Text>
               <Text style={styles.emptyHint}>Tap to register your coffee equipment</Text>
@@ -210,8 +212,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     borderStyle: 'dashed',
   },
-  emptyIcon: {
-    fontSize: 28,
+  emptyIconWrap: {
     marginRight: 14,
   },
   emptyBody: {

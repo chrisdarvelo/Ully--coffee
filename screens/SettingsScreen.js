@@ -17,7 +17,7 @@ import { getProfile, saveProfile } from '../services/ProfileService';
 import { getEquipment } from '../services/EquipmentService';
 import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
-import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
+import { EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function SettingsScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -237,7 +237,9 @@ export default function SettingsScreen({ navigation: tabNav }) {
             onPress={() => navigation.navigate('EquipmentDetail')}
             activeOpacity={0.7}
           >
-            <Text style={styles.equipEmptyIcon}>☕</Text>
+            <View style={styles.equipEmptyIconWrap}>
+              <EspressoMachineIcon size={24} color={Colors.text} />
+            </View>
             <View style={styles.equipEmptyBody}>
               <Text style={styles.equipEmptyTitle}>Add your first machine</Text>
               <Text style={styles.equipEmptyHint}>Tap to register your coffee equipment</Text>
@@ -549,8 +551,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     borderStyle: 'dashed',
   },
-  equipEmptyIcon: {
-    fontSize: 24,
+  equipEmptyIconWrap: {
     marginRight: 14,
   },
   equipEmptyBody: {
