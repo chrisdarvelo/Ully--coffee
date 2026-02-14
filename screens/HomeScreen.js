@@ -39,6 +39,19 @@ const BLOGGER_AVATARS = [
   'https://randomuser.me/api/portraits/women/55.jpg',
 ];
 
+const CAFE_IMAGES = [
+  'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1559305616-3f99cd43e353?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1493857671505-72967e2e2760?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1525610553991-2bede1a236e2?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop',
+];
+
 const COFFEE_IMAGES = [
   'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=300&h=200&fit=crop',
   'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=300&h=200&fit=crop',
@@ -182,19 +195,22 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderCafeCard = ({ item }) => (
+  const renderCafeCard = ({ item, index }) => (
     <TouchableOpacity
-      style={styles.card}
+      style={styles.imageCard}
       onPress={() => navigation.navigate('CafeDetail', { cafe: item })}
       activeOpacity={0.7}
     >
-      <View style={styles.cafeIcon}>
-        <Text style={styles.cafeIconText}>{item.name.charAt(0).toUpperCase()}</Text>
+      <Image
+        source={{ uri: CAFE_IMAGES[index % CAFE_IMAGES.length] }}
+        style={styles.cardImage}
+      />
+      <View style={styles.cardBody}>
+        <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
+        {item.location ? (
+          <Text style={styles.cardSubtitle} numberOfLines={1}>{item.location}</Text>
+        ) : null}
       </View>
-      <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
-      {item.location ? (
-        <Text style={styles.cardSubtitle} numberOfLines={1}>{item.location}</Text>
-      ) : null}
     </TouchableOpacity>
   );
 
@@ -258,7 +274,7 @@ export default function HomeScreen() {
 
         <View onLayout={onSectionLayout('recipes')}>
           <SectionRow
-            title="Favorite Recipes"
+            title="Your Recipes"
             data={recipes}
             renderItem={renderRecipeCard}
             keyExtractor={(item) => item.id}
@@ -277,7 +293,7 @@ export default function HomeScreen() {
 
         <View onLayout={onSectionLayout('cafes')}>
           <SectionRow
-            title="Favorite Cafes"
+            title="Cafes"
             data={cafes}
             renderItem={renderCafeCard}
             keyExtractor={(item) => item.id}
@@ -427,21 +443,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   baristaCard: {
-    width: 120,
+    width: 130,
     alignItems: 'center',
     paddingVertical: 8,
   },
   baristaPhoto: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     marginBottom: 10,
     backgroundColor: Colors.border,
   },
   baristaAvatarFallback: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
