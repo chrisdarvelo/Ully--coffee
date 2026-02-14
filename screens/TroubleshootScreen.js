@@ -10,7 +10,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { auth } from '../services/FirebaseConfig';
 import { getEquipment } from '../services/EquipmentService';
-import { Colors, Fonts, DiagnosticTypes, EquipmentTypes } from '../utils/constants';
+import { Colors, AuthColors, Fonts, DiagnosticTypes, EquipmentTypes } from '../utils/constants';
 import { PortafilterIcon, ScanIcon, EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
 export default function TroubleshootScreen({ navigation: tabNav }) {
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   equipAddBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 18,
     fontWeight: '700',
     fontFamily: Fonts.mono,

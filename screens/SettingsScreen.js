@@ -15,7 +15,7 @@ import { signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { getProfile, saveProfile } from '../services/ProfileService';
 import { getEquipment } from '../services/EquipmentService';
-import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { Colors, AuthColors, Fonts, EquipmentTypes } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
 import { EspressoMachineIcon, EquipmentTypeIcon } from '../components/DiagnosticIcons';
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     borderRadius: 36,
   },
   avatarText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 30,
     fontWeight: 'bold',
     fontFamily: Fonts.mono,
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addBtn: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     width: 44,
     justifyContent: 'center',
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   addBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 20,
     fontWeight: '700',
     fontFamily: Fonts.mono,
@@ -512,14 +512,14 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   saveBtn: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
     marginTop: 16,
   },
   saveBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 15,
     fontWeight: '700',
     fontFamily: Fonts.mono,
@@ -534,12 +534,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   equipAddBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 18,
     fontWeight: '700',
     fontFamily: Fonts.mono,

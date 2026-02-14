@@ -18,7 +18,7 @@ import { getCafes } from '../services/CafeService';
 import { getBaristas } from '../services/BaristaService';
 import { getPosts } from '../services/PostService';
 import { getBlogs } from '../services/BlogService';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 import SectionRow from '../components/SectionRow';
 import RecipeArtCover from '../components/RecipeArtCover';
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   profileBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 17,
     fontWeight: '700',
     fontFamily: Fonts.mono,

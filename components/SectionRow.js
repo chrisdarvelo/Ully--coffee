@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 
 export default function SectionRow({ title, data, renderItem, onAdd, keyExtractor }) {
   return (
@@ -47,12 +47,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   addText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 18,
     fontWeight: '700',
     fontFamily: Fonts.mono,
