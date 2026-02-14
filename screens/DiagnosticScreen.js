@@ -22,19 +22,15 @@ export default function DiagnosticScreen({ route, navigation }) {
   const cameraRef = useRef(null);
 
   const titles = {
-    extraction: 'Capture Extraction',
+    extraction: 'Extraction & Dial-In',
     part: 'Photo of Part',
-    water: 'Water Test Reading',
-    grinder: 'Grinder Photo',
-    dialin: 'Shot Result',
+    resources: 'Resources',
   };
 
   const instructions = {
-    extraction: 'Capture espresso extraction showing flow pattern and portafilter',
+    extraction: 'Capture espresso extraction showing flow pattern, portafilter, or finished shot for dial-in suggestions',
     part: 'Take clear photo of the part from multiple angles if possible',
-    water: 'Photo of TDS meter reading or water test strip',
-    grinder: 'Show grinder burrs or capture grind consistency',
-    dialin: 'Photo of finished shot showing crema and color',
+    resources: 'Data analysis and volumetrics — coming soon',
   };
 
   const takePicture = async () => {
@@ -168,6 +164,17 @@ export default function DiagnosticScreen({ route, navigation }) {
       <View style={[styles.container, styles.centered]}>
         <CoffeeFlower size={100} spinning />
         <Text style={styles.brewingText}>Brewing...</Text>
+      </View>
+    );
+  }
+
+  if (type === 'resources') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>{titles[type]}</Text>
+          <Text style={styles.instruction}>{instructions[type]}</Text>
+        </View>
       </View>
     );
   }

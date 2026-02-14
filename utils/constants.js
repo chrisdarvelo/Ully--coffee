@@ -42,26 +42,16 @@ export const DiagnosticTypes = {
   extraction: {
     label: 'Extraction Analysis',
     icon: '☕',
-    description: 'Diagnose espresso extraction issues from flow pattern',
+    description: 'Diagnose extraction issues and get dial-in suggestions',
   },
   part: {
     label: 'Part Identification',
     icon: '🔧',
     description: 'Identify coffee machine parts and find replacements',
   },
-  water: {
-    label: 'Water Quality',
-    icon: '💧',
-    description: 'Analyze water test readings for optimal brewing',
-  },
-  grinder: {
-    label: 'Grinder Check',
-    icon: '⚙️',
-    description: 'Evaluate grinder burr condition and grind consistency',
-  },
-  dialin: {
-    label: 'Dial-In Assistant',
-    icon: '🎯',
-    description: 'Get suggestions to dial in your shot',
+  resources: {
+    label: 'Resources',
+    icon: '📊',
+    description: 'Data analysis and volumetrics',
   },
 };
