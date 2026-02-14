@@ -128,9 +128,6 @@ export default function HomeScreen() {
     }
   };
 
-  const onSectionLayout = (key) => (e) => {
-    sectionPositions.current[key] = e.nativeEvent.layout.y;
-  };
 
   const formatDate = (iso) => {
     try {
@@ -263,7 +260,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <View onLayout={onSectionLayout('recipes')}>
+        <View>
           <SectionRow
             title="Your Recipes"
             data={recipes}
@@ -273,7 +270,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View onLayout={onSectionLayout('news')}>
+        <View>
           <SectionRow
             title="Daily News"
             data={news}
@@ -282,7 +279,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View onLayout={onSectionLayout('baristas')}>
+        <View>
           <SectionRow
             title="Baristas"
             data={baristas}
@@ -291,7 +288,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View onLayout={onSectionLayout('cafes')}>
+        <View>
           <SectionRow
             title="Cafes"
             data={cafes}
@@ -301,7 +298,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <View onLayout={onSectionLayout('blogs')}>
+        <View>
           <SectionRow
             title="Blogs"
             data={blogs}
