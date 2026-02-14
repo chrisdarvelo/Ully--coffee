@@ -32,6 +32,12 @@ export const AuthColors = {
   link: '#c0783e',
 };
 
+export const EquipmentTypes = {
+  machine: { label: 'Machine', icon: '☕' },
+  grinder: { label: 'Grinder', icon: '⚙️' },
+  scale: { label: 'Scale', icon: '⚖️' },
+};
+
 export const DiagnosticTypes = {
   extraction: {
     label: 'Extraction Analysis',

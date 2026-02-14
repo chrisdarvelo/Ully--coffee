@@ -1,20 +1,25 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   TextInput,
+  Image,
   StyleSheet,
   TouchableOpacity,
   Alert,
   ScrollView,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from '@react-navigation/native';
 import { signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { getProfile, saveProfile } from '../services/ProfileService';
-import { Colors, Fonts } from '../utils/constants';
+import { getEquipment } from '../services/EquipmentService';
+import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation: tabNav }) {
+  const navigation = tabNav.getParent();
   const user = auth.currentUser;
   const name = user?.email ? user.email.split('@')[0] : 'User';
   const [loading, setLoading] = useState(false);
@@ -22,6 +27,8 @@ export default function SettingsScreen() {
   const [location, setLocation] = useState('');
   const [shops, setShops] = useState([]);
   const [shopInput, setShopInput] = useState('');
+  const [equipItems, setEquipItems] = useState([]);
+  const [avatarUri, setAvatarUri] = useState(null);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -29,12 +36,17 @@ export default function SettingsScreen() {
     if (profile) {
       setLocation(profile.location || '');
       setShops(profile.shops || []);
+      setAvatarUri(profile.avatarUri || null);
     }
+    const items = await getEquipment(user.uid);
+    setEquipItems(items);
   }, [user]);
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [loadProfile])
+  );
 
   const handleSignOut = async () => {
     try {
@@ -78,6 +90,20 @@ export default function SettingsScreen() {
     setShops(shops.filter((_, i) => i !== index));
   };
 
+  const pickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets?.[0]) {
+      const uri = result.assets[0].uri;
+      setAvatarUri(uri);
+      await saveProfile(user.uid, { avatarUri: uri });
+    }
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -90,11 +116,20 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {name.charAt(0).toUpperCase()}
-          </Text>
-        </View>
+        <TouchableOpacity onPress={pickAvatar} activeOpacity={0.7} style={styles.avatarWrap}>
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {name.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          <View style={styles.avatarBadge}>
+            <Text style={styles.avatarBadgeIcon}>&#9998;</Text>
+          </View>
+        </TouchableOpacity>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.email}>{user?.email || 'Unknown'}</Text>
       </View>
@@ -166,6 +201,54 @@ export default function SettingsScreen() {
               <Text style={styles.saveBtnText}>Save</Text>
             </TouchableOpacity>
           </View>
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <View style={styles.equipHeader}>
+          <Text style={styles.sectionTitle}>Equipment</Text>
+          <TouchableOpacity
+            style={styles.equipAddBtn}
+            onPress={() => navigation.navigate('EquipmentDetail')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.equipAddBtnText}>+</Text>
+          </TouchableOpacity>
+        </View>
+
+        {equipItems.length === 0 ? (
+          <TouchableOpacity
+            style={styles.equipEmptyCard}
+            onPress={() => navigation.navigate('EquipmentDetail')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.equipEmptyIcon}>☕</Text>
+            <View style={styles.equipEmptyBody}>
+              <Text style={styles.equipEmptyTitle}>Add your first machine</Text>
+              <Text style={styles.equipEmptyHint}>Tap to register your coffee equipment</Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          equipItems.map((item) => {
+            const typeInfo = EquipmentTypes[item.type] || EquipmentTypes.machine;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.equipItem}
+                onPress={() => navigation.navigate('EquipmentDetail', { item })}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.equipItemIcon}>{typeInfo.icon}</Text>
+                <View style={styles.equipItemBody}>
+                  <Text style={styles.equipItemName}>{item.name}</Text>
+                  <Text style={styles.equipItemDetail}>
+                    {typeInfo.label}{item.brand ? ` · ${item.brand}` : ''}{item.model ? ` · ${item.model}` : ''}
+                  </Text>
+                </View>
+                <Text style={styles.equipChevron}>›</Text>
+              </TouchableOpacity>
+            );
+          })
         )}
       </View>
 
@@ -245,6 +328,11 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingBottom: 24,
   },
+  avatarWrap: {
+    width: 72,
+    height: 72,
+    marginBottom: 14,
+  },
   avatar: {
     width: 72,
     height: 72,
@@ -252,13 +340,34 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.text,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
   },
   avatarText: {
     color: Colors.background,
     fontSize: 30,
     fontWeight: 'bold',
     fontFamily: Fonts.mono,
+  },
+  avatarBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: -2,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.card,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarBadgeIcon: {
+    fontSize: 12,
+    color: Colors.text,
   },
   name: {
     fontSize: 20,
@@ -391,6 +500,91 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: Fonts.mono,
+  },
+  equipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  equipAddBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.text,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  equipAddBtnText: {
+    color: Colors.background,
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: Fonts.mono,
+    lineHeight: 20,
+  },
+  equipEmptyCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderStyle: 'dashed',
+  },
+  equipEmptyIcon: {
+    fontSize: 24,
+    marginRight: 14,
+  },
+  equipEmptyBody: {
+    flex: 1,
+  },
+  equipEmptyTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+  },
+  equipEmptyHint: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    marginTop: 2,
+  },
+  equipItem: {
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  equipItemIcon: {
+    fontSize: 22,
+    marginRight: 12,
+  },
+  equipItemBody: {
+    flex: 1,
+  },
+  equipItemName: {
+    fontSize: 14,
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    fontWeight: '600',
+  },
+  equipItemDetail: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    marginTop: 2,
+  },
+  equipChevron: {
+    fontSize: 18,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    paddingLeft: 8,
   },
   signOutRow: {
     backgroundColor: Colors.card,

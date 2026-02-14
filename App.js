@@ -21,6 +21,7 @@ import ResultScreen from './screens/ResultScreen';
 import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import BaristaDetailScreen from './screens/BaristaDetailScreen';
 import CafeDetailScreen from './screens/CafeDetailScreen';
+import EquipmentDetailScreen from './screens/EquipmentDetailScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
@@ -249,6 +250,11 @@ function AppNavigator({ onboarded }) {
         name="CafeDetail"
         component={CafeDetailScreen}
         options={{ title: 'Cafe' }}
+      />
+      <AppStack.Screen
+        name="EquipmentDetail"
+        component={EquipmentDetailScreen}
+        options={{ title: 'Equipment' }}
       />
     </AppStack.Navigator>
   );
