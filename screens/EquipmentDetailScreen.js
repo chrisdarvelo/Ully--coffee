@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { auth } from '../services/FirebaseConfig';
 import { saveEquipmentItem, removeEquipmentItem } from '../services/EquipmentService';
-import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { Colors, AuthColors, Fonts, EquipmentTypes } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
 
@@ -83,7 +83,7 @@ export default function EquipmentDetailScreen({ route, navigation }) {
               <EquipmentTypeIcon
                 type={key}
                 size={22}
-                color={type === key ? Colors.background : Colors.text}
+                color={type === key ? AuthColors.buttonText : Colors.text}
               />
               <Text style={[styles.typeLabel, type === key && styles.typeLabelActive]}>
                 {val.label}
@@ -192,8 +192,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   typeOptionActive: {
-    borderColor: Colors.text,
-    backgroundColor: Colors.text,
+    borderColor: AuthColors.buttonFill,
+    backgroundColor: AuthColors.buttonFill,
   },
   typeIcon: {
     fontSize: 22,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   typeLabelActive: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
   },
   input: {
     backgroundColor: Colors.card,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   saveButton: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 10,
     padding: 16,
     alignItems: 'center',
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   saveButtonText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 16,
     fontWeight: '700',
     fontFamily: Fonts.mono,

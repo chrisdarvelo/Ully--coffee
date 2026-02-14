@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path, Line } from 'react-native-svg';
 import { auth } from '../services/FirebaseConfig';
 import ClaudeService from '../services/ClaudeService';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 import PaperBackground from '../components/PaperBackground';
 
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 18,
     borderBottomRightRadius: 4,
     padding: 14,
@@ -499,10 +499,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 28,
     borderRadius: 20,
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
   },
   newChatText: {
-    color: '#fff',
+    color: AuthColors.buttonText,
     fontSize: 14,
     fontFamily: Fonts.mono,
     fontWeight: '600',

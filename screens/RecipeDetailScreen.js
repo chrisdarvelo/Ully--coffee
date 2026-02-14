@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth } from '../services/FirebaseConfig';
 import { saveRecipe, deleteRecipe } from '../services/RecipeService';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 import RecipeArtCover from '../components/RecipeArtCover';
 
 export default function RecipeDetailScreen({ route, navigation }) {
@@ -188,14 +188,14 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   saveBtn: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
     marginTop: 24,
   },
   saveBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 15,
     fontWeight: '700',
     fontFamily: Fonts.mono,

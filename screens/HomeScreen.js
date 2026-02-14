@@ -16,7 +16,6 @@ import { getNews } from '../services/NewsService';
 import { getRecipes } from '../services/RecipeService';
 import { getCafes } from '../services/CafeService';
 import { getBaristas } from '../services/BaristaService';
-import { getPosts } from '../services/PostService';
 import { getBlogs } from '../services/BlogService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
@@ -77,7 +76,6 @@ export default function HomeScreen() {
   const [recipes, setRecipes] = useState([]);
   const [baristas, setBaristas] = useState([]);
   const [cafes, setCafes] = useState([]);
-  const [posts, setPosts] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,13 +83,12 @@ export default function HomeScreen() {
 
   const loadData = useCallback(async () => {
     const uid = user?.uid;
-    const [prof, articles, recs, baristaList, cafeList, postList, blogList] = await Promise.all([
+    const [prof, articles, recs, baristaList, cafeList, blogList] = await Promise.all([
       uid ? getProfile(uid) : null,
       getNews(),
       uid ? getRecipes(uid) : [],
       uid ? getBaristas(uid) : [],
       uid ? getCafes(uid) : [],
-      uid ? getPosts(uid) : [],
       getBlogs(),
     ]);
     setProfile(prof);
@@ -99,7 +96,6 @@ export default function HomeScreen() {
     setRecipes(recs);
     setBaristas(baristaList);
     setCafes(cafeList);
-    setPosts(postList);
     setBlogs(blogList);
     setLoading(false);
   }, [user]);
@@ -211,18 +207,6 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderPostCard = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('BlogWrite', { post: item })}
-      activeOpacity={0.7}
-    >
-      <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
-      <Text style={styles.postPreview} numberOfLines={4}>{item.body}</Text>
-      <Text style={styles.cardDate}>{formatDate(item.updatedAt || item.createdAt)}</Text>
-    </TouchableOpacity>
-  );
-
   const renderBlogCard = ({ item, index }) => (
     <TouchableOpacity
       style={styles.card}
@@ -312,16 +296,6 @@ export default function HomeScreen() {
             renderItem={renderCafeCard}
             keyExtractor={(item) => item.id}
             onAdd={() => navigation.navigate('CafeDetail', { isNew: true })}
-          />
-        </View>
-
-        <View>
-          <SectionRow
-            title="Your Posts"
-            data={posts}
-            renderItem={renderPostCard}
-            keyExtractor={(item) => item.id}
-            onAdd={() => navigation.navigate('BlogWrite', { isNew: true })}
           />
         </View>
 
@@ -446,13 +420,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: Fonts.mono,
     marginTop: 'auto',
-  },
-  postPreview: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    lineHeight: 16,
-    marginTop: 6,
   },
   blogHeader: {
     flexDirection: 'row',

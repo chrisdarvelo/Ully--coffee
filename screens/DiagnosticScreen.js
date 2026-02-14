@@ -11,7 +11,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import ClaudeService from '../services/ClaudeService';
 import CoffeeFlower from '../components/CoffeeFlower';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 
 export default function DiagnosticScreen({ route, navigation }) {
   const { type } = route.params;
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
   },
   photoButtonOutline: {
     backgroundColor: 'transparent',
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   photoButtonText: {
-    color: '#fff',
+    color: AuthColors.buttonText,
     fontSize: 16,
     fontWeight: '600',
     fontFamily: Fonts.mono,
@@ -309,14 +309,14 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
   },
   analyzeButton: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     padding: 18,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 12,
   },
   analyzeButtonText: {
-    color: '#fff',
+    color: AuthColors.buttonText,
     fontSize: 17,
     fontWeight: '700',
     fontFamily: Fonts.mono,
@@ -401,13 +401,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   permissionButton: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     padding: 14,
     borderRadius: 10,
     paddingHorizontal: 30,
   },
   permissionButtonText: {
-    color: '#fff',
+    color: AuthColors.buttonText,
     fontSize: 15,
     fontWeight: '600',
     fontFamily: Fonts.mono,

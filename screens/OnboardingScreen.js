@@ -12,7 +12,7 @@ import {
 import { auth } from '../services/FirebaseConfig';
 import { saveProfile } from '../services/ProfileService';
 import { saveEquipmentItem } from '../services/EquipmentService';
-import { Colors, Fonts, EquipmentTypes } from '../utils/constants';
+import { Colors, AuthColors, Fonts, EquipmentTypes } from '../utils/constants';
 import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
 import PaperBackground from '../components/PaperBackground';
 import CoffeeFlower from '../components/CoffeeFlower';
@@ -312,14 +312,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 10,
     width: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
   addButtonText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 22,
     fontWeight: '700',
     fontFamily: Fonts.mono,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   button: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 10,
     padding: 16,
     alignItems: 'center',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   buttonText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 16,
     fontWeight: '700',
     fontFamily: Fonts.mono,

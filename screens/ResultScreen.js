@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Image
 } from 'react-native';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 
 export default function ResultScreen({ route, navigation }) {
   const { photo, diagnosis } = route.params;
@@ -83,13 +83,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   doneButton: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     padding: 16,
     borderRadius: 10,
     alignItems: 'center',
   },
   doneButtonText: {
-    color: '#fff',
+    color: AuthColors.buttonText,
     fontSize: 16,
     fontWeight: '700',
     fontFamily: Fonts.mono,

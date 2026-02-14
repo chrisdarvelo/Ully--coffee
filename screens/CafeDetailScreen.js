@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { auth } from '../services/FirebaseConfig';
 import { addCafe, saveCafe, removeCafe } from '../services/CafeService';
-import { Colors, Fonts } from '../utils/constants';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 
 export default function CafeDetailScreen({ route, navigation }) {
@@ -144,14 +144,14 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   saveBtn: {
-    backgroundColor: Colors.text,
+    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
     marginTop: 24,
   },
   saveBtnText: {
-    color: Colors.background,
+    color: AuthColors.buttonText,
     fontSize: 15,
     fontWeight: '700',
     fontFamily: Fonts.mono,
