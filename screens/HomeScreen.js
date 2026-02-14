@@ -80,9 +80,17 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [recentPages, setRecentPages] = useState([]);
 
   // Y positions of each section for scroll-to
   const sectionPositions = useRef({});
+
+  const trackPage = (label, key, params) => {
+    setRecentPages((prev) => {
+      const filtered = prev.filter((p) => !(p.key === key && p.label === label));
+      return [{ key, label, params }, ...filtered].slice(0, 4);
+    });
+  };
 
   const loadData = useCallback(async () => {
     const uid = user?.uid;
@@ -120,15 +128,16 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handleDrawerNavigate = (key) => {
+  const handleDrawerNavigate = (key, params) => {
     setDrawerOpen(false);
-    if (key === 'profile') {
+    if (key === 'settings') {
       navigation.navigate('Profile');
       return;
     }
-    const y = sectionPositions.current[key];
-    if (y != null && scrollRef.current) {
-      scrollRef.current.scrollTo({ y, animated: true });
+    // Navigate to a detail screen
+    if (params) {
+      navigation.navigate(key, params);
+      return;
     }
   };
 
@@ -165,7 +174,10 @@ export default function HomeScreen() {
   const renderRecipeCard = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
+      onPress={() => {
+        trackPage(item.name, 'RecipeDetail', { recipe: item });
+        navigation.navigate('RecipeDetail', { recipe: item });
+      }}
       activeOpacity={0.7}
     >
       <View style={styles.recipeArtWrap}>
@@ -179,7 +191,10 @@ export default function HomeScreen() {
   const renderBaristaCard = ({ item }) => (
     <TouchableOpacity
       style={styles.baristaCard}
-      onPress={() => navigation.navigate('BaristaDetail', { barista: item })}
+      onPress={() => {
+        trackPage(item.name, 'BaristaDetail', { barista: item });
+        navigation.navigate('BaristaDetail', { barista: item });
+      }}
       activeOpacity={0.7}
     >
       {item.avatarUrl ? (
@@ -198,7 +213,10 @@ export default function HomeScreen() {
   const renderCafeCard = ({ item, index }) => (
     <TouchableOpacity
       style={styles.imageCard}
-      onPress={() => navigation.navigate('CafeDetail', { cafe: item })}
+      onPress={() => {
+        trackPage(item.name, 'CafeDetail', { cafe: item });
+        navigation.navigate('CafeDetail', { cafe: item });
+      }}
       activeOpacity={0.7}
     >
       <Image
@@ -257,9 +275,13 @@ export default function HomeScreen() {
             onPress={() => setDrawerOpen(true)}
             activeOpacity={0.7}
           >
-            <Text style={styles.profileBtnText}>
-              {name.charAt(0).toUpperCase()}
-            </Text>
+            {profile?.avatarUri ? (
+              <Image source={{ uri: profile.avatarUri }} style={styles.profileBtnImage} />
+            ) : (
+              <Text style={styles.profileBtnText}>
+                {name.charAt(0).toUpperCase()}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -315,7 +337,7 @@ export default function HomeScreen() {
         visible={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onNavigate={handleDrawerNavigate}
-        userName={name}
+        recentPages={recentPages}
       />
     </View>
   );
@@ -340,16 +362,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: Colors.text,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  profileBtnImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   profileBtnText: {
     color: Colors.background,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     fontFamily: Fonts.mono,
   },

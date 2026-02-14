@@ -91,18 +91,32 @@ export default function SettingsScreen({ navigation: tabNav }) {
     setShops(shops.filter((_, i) => i !== index));
   };
 
-  const pickAvatar = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
+  const saveAvatar = async (result) => {
     if (!result.canceled && result.assets?.[0]) {
       const uri = result.assets[0].uri;
       setAvatarUri(uri);
       await saveProfile(user.uid, { avatarUri: uri });
     }
+  };
+
+  const pickAvatar = () => {
+    const opts = {
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    };
+    Alert.alert('Profile Photo', 'Choose an option', [
+      {
+        text: 'Take Photo',
+        onPress: async () => saveAvatar(await ImagePicker.launchCameraAsync(opts)),
+      },
+      {
+        text: 'Choose from Library',
+        onPress: async () => saveAvatar(await ImagePicker.launchImageLibraryAsync(opts)),
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   if (loading) {
@@ -328,7 +342,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 64,
+    paddingTop: 90,
     paddingBottom: 24,
   },
   avatarWrap: {

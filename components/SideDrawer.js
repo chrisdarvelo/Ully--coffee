@@ -14,17 +14,7 @@ import { Colors, Fonts } from '../utils/constants';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.50;
 
-const MENU_ITEMS = [
-  { key: 'news', label: 'Daily News' },
-  { key: 'recipes', label: 'Recipes' },
-  { key: 'baristas', label: 'Baristas' },
-  { key: 'cafes', label: 'Cafes' },
-  { key: 'blogs', label: 'Blogs' },
-  { key: 'divider' },
-  { key: 'profile', label: 'Profile' },
-];
-
-export default function SideDrawer({ visible, onClose, onNavigate, userName }) {
+export default function SideDrawer({ visible, onClose, onNavigate, recentPages }) {
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -62,6 +52,8 @@ export default function SideDrawer({ visible, onClose, onNavigate, userName }) {
     return null;
   }
 
+  const items = recentPages && recentPages.length > 0 ? recentPages : [];
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents={visible ? 'auto' : 'none'}>
       <TouchableWithoutFeedback onPress={onClose}>
@@ -74,39 +66,32 @@ export default function SideDrawer({ visible, onClose, onNavigate, userName }) {
       <Animated.View
         style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}
       >
-        <TouchableOpacity
-          style={styles.drawerHeader}
-          activeOpacity={0.7}
-          onPress={() => onNavigate('profile')}
-        >
-          <View style={styles.avatarContainer}>
-            <View style={styles.drawerAvatar}>
-              <Text style={styles.drawerAvatarText}>
-                {userName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.editBadge}>
-              <Text style={styles.editBadgeIcon}>{'\u270E'}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.menuList}>
-          {MENU_ITEMS.map((item) => {
-            if (item.key === 'divider') {
-              return <View key="divider" style={styles.divider} />;
-            }
-            return (
+        {items.length > 0 && (
+          <View style={styles.menuList}>
+            <Text style={styles.sectionLabel}>Recent</Text>
+            {items.map((item, i) => (
               <TouchableOpacity
-                key={item.key}
+                key={`${item.key}-${i}`}
                 style={styles.menuItem}
                 activeOpacity={0.6}
-                onPress={() => onNavigate(item.key)}
+                onPress={() => onNavigate(item.key, item.params)}
               >
                 <Text style={styles.menuLabel}>{item.label}</Text>
               </TouchableOpacity>
-            );
-          })}
+            ))}
+          </View>
+        )}
+
+        <View style={styles.divider} />
+
+        <View style={styles.menuList}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            activeOpacity={0.6}
+            onPress={() => onNavigate('settings')}
+          >
+            <Text style={styles.menuLabel}>Settings</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.bottomLine} />
@@ -128,54 +113,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(245, 240, 235, 0.64)',
     borderRightWidth: 1,
     borderRightColor: Colors.border,
-    paddingTop: 64,
+    paddingTop: 80,
     borderBottomRightRadius: 16,
   },
-  drawerHeader: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    width: 44,
-    height: 44,
-  },
-  drawerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.text,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  drawerAvatarText: {
-    color: Colors.background,
-    fontSize: 17,
-    fontWeight: '700',
+  sectionLabel: {
+    fontSize: 11,
+    color: Colors.textSecondary,
     fontFamily: Fonts.mono,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: Colors.background,
-  },
-  editBadgeIcon: {
-    color: '#FFFFFF',
-    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    paddingHorizontal: 12,
+    marginBottom: 4,
   },
   menuList: {
-    paddingTop: 12,
+    paddingTop: 8,
     paddingHorizontal: 12,
   },
   menuItem: {
@@ -193,7 +144,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.border,
     marginVertical: 6,
-    marginHorizontal: 12,
+    marginHorizontal: 24,
   },
   bottomLine: {
     height: 1,
