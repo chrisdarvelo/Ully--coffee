@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 17,
+    fontSize: 20,
     color: Colors.text,
     fontFamily: Fonts.mono,
     fontWeight: '700',

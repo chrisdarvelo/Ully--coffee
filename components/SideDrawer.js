@@ -14,7 +14,15 @@ import { Colors, Fonts } from '../utils/constants';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.50;
 
-export default function SideDrawer({ visible, onClose, onNavigate, recentPages }) {
+const MENU_ITEMS = [
+  { key: 'ai', label: 'Ully AI' },
+  { key: 'editProfile', label: 'Edit Profile' },
+  { key: 'resources', label: 'Resources' },
+  { key: 'divider' },
+  { key: 'settings', label: 'Settings' },
+];
+
+export default function SideDrawer({ visible, onClose, onNavigate }) {
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -52,8 +60,6 @@ export default function SideDrawer({ visible, onClose, onNavigate, recentPages }
     return null;
   }
 
-  const items = recentPages && recentPages.length > 0 ? recentPages : [];
-
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents={visible ? 'auto' : 'none'}>
       <TouchableWithoutFeedback onPress={onClose}>
@@ -66,32 +72,22 @@ export default function SideDrawer({ visible, onClose, onNavigate, recentPages }
       <Animated.View
         style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}
       >
-        {items.length > 0 && (
-          <View style={styles.menuList}>
-            <Text style={styles.sectionLabel}>Recent</Text>
-            {items.map((item, i) => (
+        <View style={styles.menuList}>
+          {MENU_ITEMS.map((item) => {
+            if (item.key === 'divider') {
+              return <View key="divider" style={styles.divider} />;
+            }
+            return (
               <TouchableOpacity
-                key={`${item.key}-${i}`}
+                key={item.key}
                 style={styles.menuItem}
                 activeOpacity={0.6}
-                onPress={() => onNavigate(item.key, item.params)}
+                onPress={() => onNavigate(item.key)}
               >
                 <Text style={styles.menuLabel}>{item.label}</Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.divider} />
-
-        <View style={styles.menuList}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            activeOpacity={0.6}
-            onPress={() => onNavigate('settings')}
-          >
-            <Text style={styles.menuLabel}>Settings</Text>
-          </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.bottomLine} />
@@ -116,15 +112,6 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     borderBottomRightRadius: 16,
   },
-  sectionLabel: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    paddingHorizontal: 12,
-    marginBottom: 4,
-  },
   menuList: {
     paddingTop: 8,
     paddingHorizontal: 12,
@@ -144,7 +131,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.border,
     marginVertical: 6,
-    marginHorizontal: 24,
+    marginHorizontal: 12,
   },
   bottomLine: {
     height: 1,

@@ -80,17 +80,6 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [recentPages, setRecentPages] = useState([]);
-
-  // Y positions of each section for scroll-to
-  const sectionPositions = useRef({});
-
-  const trackPage = (label, key, params) => {
-    setRecentPages((prev) => {
-      const filtered = prev.filter((p) => !(p.key === key && p.label === label));
-      return [{ key, label, params }, ...filtered].slice(0, 4);
-    });
-  };
 
   const loadData = useCallback(async () => {
     const uid = user?.uid;
@@ -128,16 +117,14 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handleDrawerNavigate = (key, params) => {
+  const handleDrawerNavigate = (key) => {
     setDrawerOpen(false);
-    if (key === 'settings') {
+    if (key === 'ai') {
+      navigation.navigate('AI');
+    } else if (key === 'editProfile' || key === 'settings') {
       navigation.navigate('Profile');
-      return;
-    }
-    // Navigate to a detail screen
-    if (params) {
-      navigation.navigate(key, params);
-      return;
+    } else if (key === 'resources') {
+      navigation.getParent().navigate('Diagnostic', { type: 'resources' });
     }
   };
 
@@ -174,10 +161,7 @@ export default function HomeScreen() {
   const renderRecipeCard = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => {
-        trackPage(item.name, 'RecipeDetail', { recipe: item });
-        navigation.navigate('RecipeDetail', { recipe: item });
-      }}
+      onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
       activeOpacity={0.7}
     >
       <View style={styles.recipeArtWrap}>
@@ -191,10 +175,7 @@ export default function HomeScreen() {
   const renderBaristaCard = ({ item }) => (
     <TouchableOpacity
       style={styles.baristaCard}
-      onPress={() => {
-        trackPage(item.name, 'BaristaDetail', { barista: item });
-        navigation.navigate('BaristaDetail', { barista: item });
-      }}
+      onPress={() => navigation.navigate('BaristaDetail', { barista: item })}
       activeOpacity={0.7}
     >
       {item.avatarUrl ? (
@@ -213,10 +194,7 @@ export default function HomeScreen() {
   const renderCafeCard = ({ item, index }) => (
     <TouchableOpacity
       style={styles.imageCard}
-      onPress={() => {
-        trackPage(item.name, 'CafeDetail', { cafe: item });
-        navigation.navigate('CafeDetail', { cafe: item });
-      }}
+      onPress={() => navigation.navigate('CafeDetail', { cafe: item })}
       activeOpacity={0.7}
     >
       <Image
@@ -337,7 +315,6 @@ export default function HomeScreen() {
         visible={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onNavigate={handleDrawerNavigate}
-        recentPages={recentPages}
       />
     </View>
   );
@@ -476,16 +453,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   baristaPhoto: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 126,
+    height: 126,
+    borderRadius: 63,
     marginBottom: 10,
     backgroundColor: Colors.border,
   },
   baristaAvatarFallback: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 126,
+    height: 126,
+    borderRadius: 63,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
