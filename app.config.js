@@ -16,9 +16,9 @@ export default {
       bundleIdentifier: 'com.ullycoffee.app',
       infoPlist: {
         NSCameraUsageDescription:
-          'Ully Coffee needs camera access to diagnose coffee equipment issues.',
+          'Ully uses your camera to scan coffee equipment parts and analyze espresso extractions for dial-in suggestions.',
         NSPhotoLibraryUsageDescription:
-          'Ully Coffee needs photo library access to analyze existing photos of equipment.',
+          'Ully uses your photo library to upload photos of coffee equipment and espresso extractions for AI analysis.',
       },
     },
     android: {
@@ -35,14 +35,14 @@ export default {
         'expo-camera',
         {
           cameraPermission:
-            'Ully Coffee needs camera access to diagnose coffee equipment issues.',
+            'Ully uses your camera to scan coffee equipment parts and analyze espresso extractions for dial-in suggestions.',
         },
       ],
       [
         'expo-image-picker',
         {
           photosPermission:
-            'Ully Coffee needs photo library access to analyze existing photos of equipment.',
+            'Ully uses your photo library to upload photos of coffee equipment and espresso extractions for AI analysis.',
         },
       ],
       [

@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TextInput,
+  Image,
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -11,7 +12,11 @@ import {
   Platform,
   ScrollView,
   FlatList,
+  Modal,
+  Alert,
 } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path, Line } from 'react-native-svg';
 import { auth } from '../services/FirebaseConfig';
@@ -19,8 +24,12 @@ import ClaudeService from '../services/ClaudeService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
 import PaperBackground from '../components/PaperBackground';
+import { ScanIcon, PortafilterIcon } from '../components/DiagnosticIcons';
 
 const HISTORY_KEY = '@ully_chat_history';
+
+const SYSTEM_PROMPT =
+  'You are Ully, a friendly and knowledgeable coffee companion AI. You help baristas and coffee enthusiasts with espresso extraction, equipment troubleshooting, grinder calibration, water chemistry, dial-in tips, and anything coffee-related. Keep answers concise and practical. Use professional coffee terminology but explain simply.';
 
 function MicIcon({ color, size }) {
   return (
@@ -49,6 +58,30 @@ function BookIcon({ color, size }) {
   );
 }
 
+/**
+ * Converts our internal message array into the Claude API format.
+ * Internal messages: { role: 'user'|'ully', text, image? (base64) }
+ * Claude API messages: { role: 'user'|'assistant', content: string|Array }
+ */
+function buildApiMessages(messages) {
+  return messages.map((msg) => {
+    const role = msg.role === 'ully' ? 'assistant' : 'user';
+    if (msg.image) {
+      return {
+        role,
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: 'image/jpeg', data: msg.image },
+          },
+          { type: 'text', text: msg.text },
+        ],
+      };
+    }
+    return { role, content: msg.text };
+  });
+}
+
 export default function AIScreen() {
   const user = auth.currentUser;
   const name = user?.email ? user.email.split('@')[0] : 'friend';
@@ -59,6 +92,13 @@ export default function AIScreen() {
   const [listening, setListening] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState([]);
+
+  // Camera state
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraMode, setCameraMode] = useState(null); // 'scan' | 'extraction'
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef(null);
+
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
 
@@ -81,7 +121,7 @@ export default function AIScreen() {
       id: Date.now().toString(),
       preview: preview.length > 50 ? preview.slice(0, 50) + '...' : preview,
       date: new Date().toLocaleDateString(),
-      messages: msgs,
+      messages: msgs.map((m) => ({ role: m.role, text: m.text, imageUri: m.imageUri })),
     };
     const updated = [entry, ...history].slice(0, 50);
     setHistory(updated);
@@ -94,18 +134,11 @@ export default function AIScreen() {
     setListening((v) => !v);
   };
 
-  const handleSubmit = async () => {
-    const text = query.trim();
-    if (!text || loading) return;
-
-    const userMsg = { role: 'user', text };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
-    setQuery('');
+  const sendToUlly = async (newMessages) => {
     setLoading(true);
-
     try {
-      const result = await ClaudeService.chat(text);
+      const apiMessages = buildApiMessages(newMessages);
+      const result = await ClaudeService.chatWithHistory(apiMessages, SYSTEM_PROMPT, 1500);
       const withReply = [...newMessages, { role: 'ully', text: result }];
       setMessages(withReply);
       saveChat(withReply);
@@ -121,6 +154,76 @@ export default function AIScreen() {
     }
   };
 
+  const handleSubmit = async () => {
+    const text = query.trim();
+    if (!text || loading) return;
+
+    const userMsg = { role: 'user', text };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setQuery('');
+    await sendToUlly(newMessages);
+  };
+
+  const openCamera = (mode) => {
+    if (!permission?.granted) {
+      requestPermission().then((result) => {
+        if (result.granted) {
+          setCameraMode(mode);
+          setShowCamera(true);
+        }
+      });
+      return;
+    }
+    setCameraMode(mode);
+    setShowCamera(true);
+  };
+
+  const takePicture = async () => {
+    if (!cameraRef.current) return;
+    try {
+      const p = await cameraRef.current.takePictureAsync({ quality: 0.8, base64: true });
+      handlePhotoCaptured(p);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to take picture. Please try again.');
+    }
+  };
+
+  const pickImage = async (mode) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+        base64: true,
+      });
+      if (!result.canceled && result.assets?.[0]) {
+        setCameraMode(mode);
+        handlePhotoCaptured(result.assets[0]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image.');
+    }
+  };
+
+  const handlePhotoCaptured = async (photo) => {
+    setShowCamera(false);
+
+    const promptText =
+      cameraMode === 'scan'
+        ? 'Identify this coffee equipment part. Provide: part name, manufacturer/model compatibility, what it does, signs of wear or damage, recommended replacement part numbers, and where to source it.'
+        : 'Analyze this espresso extraction image. Provide: what you observe, potential issues, recommended fixes or adjustments, and any parts that may need replacement. Be specific and actionable.';
+
+    const userMsg = {
+      role: 'user',
+      text: promptText,
+      image: photo.base64,
+      imageUri: photo.uri,
+    };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    await sendToUlly(newMessages);
+  };
+
   const openChat = (entry) => {
     setMessages(entry.messages);
     setShowHistory(false);
@@ -133,6 +236,50 @@ export default function AIScreen() {
 
   const hasMessages = messages.length > 0;
 
+  const cameraInstructions = {
+    scan: 'Take a clear photo of the part from multiple angles if possible',
+    extraction: 'Capture espresso extraction showing flow pattern, portafilter, or finished shot',
+  };
+
+  // Camera modal
+  if (showCamera) {
+    return (
+      <Modal visible animationType="slide" statusBarTranslucent>
+        <View style={{ flex: 1, backgroundColor: '#000' }}>
+          <CameraView style={styles.camera} ref={cameraRef} facing="back" />
+          <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            <View style={styles.cameraOverlay}>
+              <View style={styles.instructionBox}>
+                <Text style={styles.instructionBoxText}>
+                  {cameraInstructions[cameraMode] || ''}
+                </Text>
+              </View>
+              <View style={styles.scanFrame}>
+                <View style={[styles.scanCorner, styles.scanTopLeft]} />
+                <View style={[styles.scanCorner, styles.scanTopRight]} />
+                <View style={[styles.scanCorner, styles.scanBottomLeft]} />
+                <View style={[styles.scanCorner, styles.scanBottomRight]} />
+              </View>
+            </View>
+            <View style={styles.cameraControls}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setShowCamera(false)}
+              >
+                <Text style={styles.backButtonText}>{'\u2190'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
+              <View style={{ width: 48 }} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  // History view
   if (showHistory) {
     return (
       <PaperBackground>
@@ -182,6 +329,30 @@ export default function AIScreen() {
     );
   }
 
+  // Action chips (used in empty state and toolbar)
+  const ActionChips = ({ compact }) => (
+    <View style={compact ? styles.toolbarRow : styles.actionChipsRow}>
+      <TouchableOpacity
+        style={compact ? styles.toolbarBtn : styles.actionChip}
+        onPress={() => openCamera('extraction')}
+        onLongPress={() => pickImage('extraction')}
+        activeOpacity={0.7}
+      >
+        <PortafilterIcon size={compact ? 18 : 20} color={Colors.text} />
+        {!compact && <Text style={styles.actionChipText}>Dial-in</Text>}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={compact ? styles.toolbarBtn : styles.actionChip}
+        onPress={() => openCamera('scan')}
+        onLongPress={() => pickImage('scan')}
+        activeOpacity={0.7}
+      >
+        <ScanIcon size={compact ? 18 : 20} color={Colors.text} />
+        {!compact && <Text style={styles.actionChipText}>Troubleshoot</Text>}
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <PaperBackground>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -200,9 +371,11 @@ export default function AIScreen() {
               </View>
 
               <View style={styles.centerContent}>
-                <CoffeeFlower size={64} spinning={listening} bold />
+                <CoffeeFlower size={54} spinning={listening} bold />
                 <Text style={styles.greeting}>Hello {name},</Text>
                 <Text style={styles.subGreeting}>how can I help?</Text>
+
+                <ActionChips />
 
                 <View style={styles.searchWrap}>
                   <View style={styles.searchContainer}>
@@ -253,6 +426,9 @@ export default function AIScreen() {
                 {messages.map((msg, i) =>
                   msg.role === 'user' ? (
                     <View key={i} style={styles.userBubble}>
+                      {msg.imageUri && (
+                        <Image source={{ uri: msg.imageUri }} style={styles.bubbleImage} />
+                      )}
                       <Text style={styles.userText}>{msg.text}</Text>
                     </View>
                   ) : (
@@ -263,10 +439,15 @@ export default function AIScreen() {
                 )}
                 {loading && (
                   <View style={styles.loadingRow}>
-                    <CoffeeFlower size={32} spinning bold />
+                    <CoffeeFlower size={27} spinning bold />
                   </View>
                 )}
               </ScrollView>
+
+              <ActionChips compact />
+              <Text style={styles.aiDisclosure}>
+                Responses are AI-generated by Ully and may not always be accurate.
+              </Text>
 
               <View style={styles.inputBar}>
                 <View style={styles.searchContainer}>
@@ -350,6 +531,54 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'center',
   },
+  aiDisclosure: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
+    marginTop: 12,
+  },
+  // Action chips (empty state)
+  actionChipsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  actionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  actionChipText: {
+    fontSize: 14,
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    fontWeight: '600',
+  },
+  // Toolbar (active chat)
+  toolbarRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 20,
+  },
+  toolbarBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   searchWrap: {
     marginTop: 32,
     alignSelf: 'stretch',
@@ -405,6 +634,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
     lineHeight: 20,
   },
+  bubbleImage: {
+    width: 200,
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
   ullyBubble: {
     alignSelf: 'flex-start',
     backgroundColor: Colors.card,
@@ -431,6 +666,97 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 24,
     paddingTop: 8,
+  },
+  // Camera styles
+  camera: {
+    flex: 1,
+  },
+  cameraOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    padding: 20,
+    paddingTop: 60,
+  },
+  instructionBox: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 15,
+    borderRadius: 10,
+  },
+  instructionBoxText: {
+    color: '#fff',
+    fontSize: 15,
+    textAlign: 'center',
+    fontFamily: Fonts.mono,
+  },
+  scanFrame: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 40,
+  },
+  scanCorner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: '#fff',
+  },
+  scanTopLeft: {
+    top: 0,
+    left: 30,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+  },
+  scanTopRight: {
+    top: 0,
+    right: 30,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+  },
+  scanBottomLeft: {
+    bottom: 0,
+    left: 30,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+  },
+  scanBottomRight: {
+    bottom: 0,
+    right: 30,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+  },
+  cameraControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 30,
+    paddingBottom: 50,
+  },
+  backButton: {
+    padding: 10,
+    width: 48,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 28,
+  },
+  captureButton: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#ccc',
+  },
+  captureButtonInner: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: '#ddd',
   },
   // History view
   historyContainer: {

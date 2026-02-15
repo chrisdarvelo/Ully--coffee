@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,25 @@ import CoffeeFlower from '../components/CoffeeFlower';
 
 export default function VerifyEmailScreen({ onVerified }) {
   const [loading, setLoading] = useState(false);
+  const [polling, setPolling] = useState(true);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(async () => {
+      try {
+        await auth.currentUser?.reload();
+        if (auth.currentUser?.emailVerified) {
+          clearInterval(intervalRef.current);
+          setPolling(false);
+          onVerified();
+        }
+      } catch {
+        // Silently ignore reload errors during polling
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalRef.current);
+  }, [onVerified]);
 
   const handleResend = async () => {
     setLoading(true);
@@ -68,7 +87,9 @@ export default function VerifyEmailScreen({ onVerified }) {
           <Text style={styles.email}>{auth.currentUser?.email}</Text>
         </Text>
         <Text style={styles.hint}>
-          Check your inbox and click the link to verify your account, then tap the button below.
+          {polling
+            ? 'Checking for verification...'
+            : 'Check your inbox and click the link to verify your account.'}
         </Text>
 
         <TouchableOpacity

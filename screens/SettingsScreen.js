@@ -8,15 +8,18 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  FlatList,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { getProfile, saveProfile } from '../services/ProfileService';
+import { getEquipment } from '../services/EquipmentService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { EquipmentTypeIcon, EspressoMachineIcon } from '../components/DiagnosticIcons';
 
 export default function SettingsScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -28,15 +31,20 @@ export default function SettingsScreen({ navigation: tabNav }) {
   const [shops, setShops] = useState([]);
   const [shopInput, setShopInput] = useState('');
   const [avatarUri, setAvatarUri] = useState(null);
+  const [equipment, setEquipment] = useState([]);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
-    const profile = await getProfile(user.uid);
+    const [profile, equip] = await Promise.all([
+      getProfile(user.uid),
+      getEquipment(user.uid),
+    ]);
     if (profile) {
       setLocation(profile.location || '');
       setShops(profile.shops || []);
       setAvatarUri(profile.avatarUri || null);
     }
+    setEquipment(equip || []);
   }, [user]);
 
   useFocusEffect(
@@ -219,6 +227,54 @@ export default function SettingsScreen({ navigation: tabNav }) {
       </View>
 
       <View style={styles.section}>
+        <View style={styles.equipHeader}>
+          <Text style={styles.sectionTitle}>Your Equipment</Text>
+          <TouchableOpacity
+            style={styles.equipAddBtn}
+            onPress={() => navigation.navigate('EquipmentDetail')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.equipAddBtnText}>+</Text>
+          </TouchableOpacity>
+        </View>
+
+        {equipment.length === 0 ? (
+          <TouchableOpacity
+            style={styles.emptyEquipCard}
+            onPress={() => navigation.navigate('EquipmentDetail')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.emptyEquipIcon}>
+              <EspressoMachineIcon size={28} color={Colors.text} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowText}>Add your first machine</Text>
+              <Text style={styles.rowHint}>Tap to register your coffee equipment</Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <FlatList
+            data={equipment}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.equipList}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.equipCard}
+                onPress={() => navigation.navigate('EquipmentDetail', { item })}
+                activeOpacity={0.7}
+              >
+                <EquipmentTypeIcon type={item.type} size={26} color={Colors.text} />
+                <Text style={styles.equipName} numberOfLines={1}>{item.name}</Text>
+                {item.brand ? <Text style={styles.equipBrand} numberOfLines={1}>{item.brand}</Text> : null}
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Settings</Text>
 
         <TouchableOpacity
@@ -254,6 +310,18 @@ export default function SettingsScreen({ navigation: tabNav }) {
           <View style={styles.rowBody}>
             <Text style={styles.rowText}>Units & Preferences</Text>
             <Text style={styles.rowHint}>Coming soon</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => navigation.navigate('PrivacyPolicy', { modal: true })}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.rowIcon}>&#128274;</Text>
+          <View style={styles.rowBody}>
+            <Text style={styles.rowText}>Privacy Policy</Text>
+            <Text style={styles.rowHint}>How we handle your data</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -480,5 +548,66 @@ const styles = StyleSheet.create({
     color: Colors.danger,
     fontFamily: Fonts.mono,
     fontWeight: '700',
+  },
+  // Equipment styles
+  equipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  equipAddBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: AuthColors.buttonFill,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  equipAddBtnText: {
+    color: AuthColors.buttonText,
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: Fonts.mono,
+    lineHeight: 20,
+  },
+  equipList: {
+    gap: 10,
+  },
+  equipCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+    padding: 14,
+    width: 120,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  equipName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
+  },
+  equipBrand: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  emptyEquipCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderStyle: 'dashed',
+  },
+  emptyEquipIcon: {
+    marginRight: 14,
   },
 });

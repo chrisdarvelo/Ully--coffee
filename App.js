@@ -10,11 +10,10 @@ import { Colors, AuthColors, Fonts } from './utils/constants';
 import { isOnboarded } from './services/ProfileService';
 import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import CoffeeFlower from './components/CoffeeFlower';
-import Svg, { Path, Circle, Line } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 
 import HomeScreen from './screens/HomeScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
-import TroubleshootScreen from './screens/TroubleshootScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import AIScreen from './screens/AIScreen';
 import DiagnosticScreen from './screens/DiagnosticScreen';
@@ -26,6 +25,7 @@ import EquipmentDetailScreen from './screens/EquipmentDetailScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
+import PrivacyPolicyScreen from './screens/PrivacyPolicyScreen';
 
 const AuthStack = createNativeStackNavigator();
 const AppStack = createNativeStackNavigator();
@@ -42,6 +42,7 @@ function AuthNavigator() {
       <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+      <AuthStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: 'Privacy Policy' }} />
     </AuthStack.Navigator>
   );
 }
@@ -71,68 +72,6 @@ function TentIcon({ color, size }) {
   );
 }
 
-function ScanIcon({ color, size }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {/* Corner brackets */}
-      <Path d="M3 7V4a1 1 0 011-1h3M17 3h3a1 1 0 011 1v3M21 17v3a1 1 0 01-1 1h-3M7 21H4a1 1 0 01-1-1v-3" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-      {/* Barcode lines */}
-      <Line x1="7" y1="7" x2="7" y2="17" stroke={color} strokeWidth={1.5} />
-      <Line x1="10" y1="7" x2="10" y2="17" stroke={color} strokeWidth={1} />
-      <Line x1="12.5" y1="7" x2="12.5" y2="17" stroke={color} strokeWidth={2} />
-      <Line x1="15" y1="7" x2="15" y2="17" stroke={color} strokeWidth={1} />
-      <Line x1="17" y1="7" x2="17" y2="17" stroke={color} strokeWidth={1.5} />
-    </Svg>
-  );
-}
-
-function CoffeeFruitIcon({ color, size }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {/* Stem */}
-      <Path
-        d="M12 4v4"
-        stroke={color}
-        strokeWidth={1.2}
-        strokeLinecap="round"
-      />
-      {/* Left leaf */}
-      <Path
-        d="M12 5c-2-1.5-5-1-5 1.5s3 2 5 0.5"
-        fill="#5A8C3C"
-        stroke="#4A7A2E"
-        strokeWidth={0.8}
-      />
-      {/* Right leaf */}
-      <Path
-        d="M12 5c2-1.5 5-1 5 1.5s-3 2-5 0.5"
-        fill="#6B9E4A"
-        stroke="#4A7A2E"
-        strokeWidth={0.8}
-      />
-      {/* Left cherry */}
-      <Circle cx="10" cy="14" r="4" fill="#C0392B" stroke="#A33225" strokeWidth={0.8} />
-      {/* Right cherry */}
-      <Circle cx="15" cy="13.5" r="3.5" fill="#E74C3C" stroke="#C0392B" strokeWidth={0.8} />
-      {/* Cherry stems connecting to main stem */}
-      <Path
-        d="M12 8c-1 1-2 3-2 6"
-        stroke={color}
-        strokeWidth={1}
-        strokeLinecap="round"
-        fill="none"
-      />
-      <Path
-        d="M12 8c1 0.5 2 2.5 3 5.5"
-        stroke={color}
-        strokeWidth={1}
-        strokeLinecap="round"
-        fill="none"
-      />
-    </Svg>
-  );
-}
-
 function ProfileIcon({ color, size }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -151,15 +90,7 @@ function TabIcon({ label, focused }) {
   if (label === 'AI') {
     return (
       <View style={{ transform: [{ scale }] }}>
-        <CoffeeFruitIcon color={color} size={24} />
-      </View>
-    );
-  }
-
-  if (label === 'Troubleshoot') {
-    return (
-      <View style={{ transform: [{ scale }] }}>
-        <ScanIcon color={color} size={24} />
+        <CoffeeFlower size={24} bold dark={focused} />
       </View>
     );
   }
@@ -198,9 +129,8 @@ function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Troubleshoot" component={TroubleshootScreen} />
-      <Tab.Screen name="Profile" component={SettingsScreen} />
       <Tab.Screen name="AI" component={AIScreen} />
+      <Tab.Screen name="Profile" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
@@ -256,6 +186,11 @@ function AppNavigator({ onboarded }) {
         name="EquipmentDetail"
         component={EquipmentDetailScreen}
         options={{ title: 'Equipment' }}
+      />
+      <AppStack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={{ title: 'Privacy Policy' }}
       />
     </AppStack.Navigator>
   );

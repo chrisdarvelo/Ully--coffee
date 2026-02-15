@@ -1,29 +1,27 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View, StyleSheet } from 'react-native';
-import Svg, { Ellipse, Circle } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 
-export default function CoffeeFlower({ size = 150, spinning = false, bold = false }) {
-  const breathAnim = useRef(new Animated.Value(1)).current;
+function petalPath(cx, cy, length, width, angle) {
+  const rad = ((angle - 90) * Math.PI) / 180;
+  const tipX = cx + length * Math.cos(rad);
+  const tipY = cy + length * Math.sin(rad);
+
+  const perpRad = rad + Math.PI / 2;
+  const cpDist = length * 0.45;
+  const cpX = cx + cpDist * Math.cos(rad);
+  const cpY = cy + cpDist * Math.sin(rad);
+
+  const cp1x = cpX + width * Math.cos(perpRad);
+  const cp1y = cpY + width * Math.sin(perpRad);
+  const cp2x = cpX - width * Math.cos(perpRad);
+  const cp2y = cpY - width * Math.sin(perpRad);
+
+  return `M ${cx} ${cy} Q ${cp1x} ${cp1y} ${tipX} ${tipY} Q ${cp2x} ${cp2y} ${cx} ${cy} Z`;
+}
+
+export default function CoffeeFlower({ size = 150, spinning = false, bold = false, dark = false }) {
   const spinAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const breathLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(breathAnim, {
-          toValue: 1.06,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(breathAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    breathLoop.start();
-    return () => breathLoop.stop();
-  }, [breathAnim]);
 
   useEffect(() => {
     if (spinning) {
@@ -47,64 +45,72 @@ export default function CoffeeFlower({ size = 150, spinning = false, bold = fals
     outputRange: ['0deg', '360deg'],
   });
 
-  const petalAngles = [0, 72, 144, 216, 288];
-
   const center = size / 2;
-  const petalRx = size * 0.16;
-  const petalRy = size * 0.32;
-  const petalOffset = size * 0.22;
-  const stamenDistance = size * 0.08;
-  const stamenRadius = size * 0.025;
-  const centerRadius = size * 0.07;
+  // Outer petals — fatter
+  const outerLength = size * 0.42;
+  const outerWidth = size * 0.16;
+  const outerAngles = [0, 72, 144, 216, 288].map((a) => a + 36);
+  // Inner petals — finer, rotated between outer petals
+  const innerLength = size * 0.28;
+  const innerWidth = size * 0.06;
+  const innerAngles = [0, 72, 144, 216, 288].map((a) => a + 72);
+  const centerRadius = size * 0.035;
+  const strokeW = bold ? Math.max(size * 0.03, 0.8) : Math.max(size * 0.02, 0.5);
+  const strokeColor = dark ? '#3A3A3A' : bold ? '#C0B0A0' : '#DDD5CC';
+  const fillColor = '#FFFFFF';
+  const centerFill = '#F5EDE4';
 
-  const transform = spinning
-    ? [{ scale: breathAnim }, { rotate }]
-    : [{ scale: breathAnim }];
+  const transform = spinning ? [{ rotate }] : [];
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Animated.View style={{ transform }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {/* Petals */}
-          {petalAngles.map((angle) => (
-            <Ellipse
-              key={`petal-${angle}`}
-              cx={center}
-              cy={center - petalOffset}
-              rx={petalRx}
-              ry={petalRy}
-              fill={bold ? '#FAF5F0' : '#FAF5F0'}
-              stroke={bold ? '#B8A898' : '#E8DDD4'}
-              strokeWidth={bold ? 1.8 : 1}
-              transform={`rotate(${angle}, ${center}, ${center})`}
-              opacity={0.92}
+          {/* Outer petal fills */}
+          {outerAngles.map((angle) => (
+            <Path
+              key={`of-${angle}`}
+              d={petalPath(center, center, outerLength, outerWidth, angle)}
+              fill={fillColor}
             />
           ))}
-
-          {/* Stamens */}
-          {[0, 60, 120, 180, 240, 300].map((angle) => {
-            const rad = (angle * Math.PI) / 180;
-            const sx = center + stamenDistance * Math.cos(rad);
-            const sy = center + stamenDistance * Math.sin(rad);
-            return (
-              <Circle
-                key={`stamen-${angle}`}
-                cx={sx}
-                cy={sy}
-                r={stamenRadius}
-                fill="#8B6914"
-                opacity={0.7}
-              />
-            );
-          })}
-
-          {/* Center disk */}
-          <Circle cx={center} cy={center} r={centerRadius} fill="#D4A574" />
+          {/* Outer petal strokes */}
+          {outerAngles.map((angle) => (
+            <Path
+              key={`os-${angle}`}
+              d={petalPath(center, center, outerLength, outerWidth, angle)}
+              fill="none"
+              stroke={strokeColor}
+              strokeWidth={strokeW}
+            />
+          ))}
+          {/* Inner petal fills */}
+          {innerAngles.map((angle) => (
+            <Path
+              key={`if-${angle}`}
+              d={petalPath(center, center, innerLength, innerWidth, angle)}
+              fill={fillColor}
+            />
+          ))}
+          {/* Inner petal strokes */}
+          {innerAngles.map((angle) => (
+            <Path
+              key={`is-${angle}`}
+              d={petalPath(center, center, innerLength, innerWidth, angle)}
+              fill="none"
+              stroke={strokeColor}
+              strokeWidth={strokeW * 0.7}
+            />
+          ))}
+          {/* Tiny pale center */}
+          <Circle cx={center} cy={center} r={centerRadius} fill={centerFill} />
           <Circle
             cx={center}
             cy={center}
-            r={centerRadius * 0.65}
-            fill="#C0783E"
+            r={centerRadius}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={strokeW * 0.7}
           />
         </Svg>
       </Animated.View>

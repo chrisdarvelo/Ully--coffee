@@ -16,11 +16,35 @@ import { AuthColors, Fonts } from '../utils/constants';
 import { validatePassword, validateEmail } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const MIN_AGE = 13;
+
+function getAge(year, month, day) {
+  const today = new Date();
+  const birthDate = new Date(year, month - 1, day);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Age verification
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthDay, setBirthDay] = useState('');
+  const [birthYear, setBirthYear] = useState('');
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   const handleCreateAccount = async () => {
     if (!email.trim() || !password || !confirmPassword) {
@@ -30,6 +54,30 @@ export default function SignUpScreen({ navigation }) {
 
     if (!validateEmail(email)) {
       Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    // Age validation
+    const month = parseInt(birthMonth, 10);
+    const day = parseInt(birthDay, 10);
+    const year = parseInt(birthYear, 10);
+
+    if (!month || !day || !year || month < 1 || month > 12 || day < 1 || day > 31 || year < 1900) {
+      Alert.alert('Error', 'Please enter a valid date of birth.');
+      return;
+    }
+
+    const age = getAge(year, month, day);
+    if (age < MIN_AGE) {
+      Alert.alert(
+        'Age Requirement',
+        `You must be at least ${MIN_AGE} years old to use Ully. Please come back when you're older!`
+      );
+      return;
+    }
+
+    if (!agreedToPrivacy) {
+      Alert.alert('Privacy Policy', 'Please agree to the Privacy Policy to continue.');
       return;
     }
 
@@ -48,6 +96,10 @@ export default function SignUpScreen({ navigation }) {
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
       await sendEmailVerification(user);
+      Alert.alert(
+        'Verification Email Sent',
+        'Please check your inbox and click the verification link to activate your account.'
+      );
     } catch (error) {
       let message = 'An error occurred. Please try again.';
       if (error.code === 'auth/email-already-in-use') {
@@ -102,6 +154,59 @@ export default function SignUpScreen({ navigation }) {
               onChangeText={setConfirmPassword}
               secureTextEntry
             />
+
+            {/* Date of Birth */}
+            <Text style={styles.fieldLabel}>Date of Birth</Text>
+            <View style={styles.dobRow}>
+              <TextInput
+                style={[styles.input, styles.dobInput]}
+                placeholder="MM"
+                placeholderTextColor="#999"
+                value={birthMonth}
+                onChangeText={(t) => setBirthMonth(t.replace(/[^0-9]/g, '').slice(0, 2))}
+                keyboardType="number-pad"
+                maxLength={2}
+              />
+              <TextInput
+                style={[styles.input, styles.dobInput]}
+                placeholder="DD"
+                placeholderTextColor="#999"
+                value={birthDay}
+                onChangeText={(t) => setBirthDay(t.replace(/[^0-9]/g, '').slice(0, 2))}
+                keyboardType="number-pad"
+                maxLength={2}
+              />
+              <TextInput
+                style={[styles.input, styles.dobInputYear]}
+                placeholder="YYYY"
+                placeholderTextColor="#999"
+                value={birthYear}
+                onChangeText={(t) => setBirthYear(t.replace(/[^0-9]/g, '').slice(0, 4))}
+                keyboardType="number-pad"
+                maxLength={4}
+              />
+            </View>
+            <Text style={styles.dobHint}>You must be at least 13 years old</Text>
+
+            {/* Privacy Policy Consent */}
+            <TouchableOpacity
+              style={styles.checkboxRow}
+              onPress={() => setAgreedToPrivacy(!agreedToPrivacy)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, agreedToPrivacy && styles.checkboxChecked]}>
+                {agreedToPrivacy && <Text style={styles.checkmark}>&#10003;</Text>}
+              </View>
+              <Text style={styles.checkboxLabel}>
+                I agree to the{' '}
+                <Text
+                  style={styles.privacyLink}
+                  onPress={() => navigation.navigate('PrivacyPolicy')}
+                >
+                  Privacy Policy
+                </Text>
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.createButton, loading && styles.buttonDisabled]}
@@ -173,6 +278,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: AuthColors.text,
     fontFamily: Fonts.mono,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    color: AuthColors.textSecondary,
+    fontFamily: Fonts.mono,
+    fontWeight: '600',
+    marginBottom: -8,
+  },
+  dobRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  dobInput: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  dobInputYear: {
+    flex: 1.5,
+    textAlign: 'center',
+  },
+  dobHint: {
+    fontSize: 12,
+    color: AuthColors.textSecondary,
+    fontFamily: Fonts.mono,
+    marginTop: -8,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: AuthColors.inputBorder,
+    backgroundColor: AuthColors.inputBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: AuthColors.buttonFill,
+    borderColor: AuthColors.buttonFill,
+  },
+  checkmark: {
+    color: AuthColors.buttonText,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: AuthColors.text,
+    fontFamily: Fonts.mono,
+    lineHeight: 20,
+  },
+  privacyLink: {
+    color: AuthColors.link,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   createButton: {
     backgroundColor: AuthColors.buttonFill,

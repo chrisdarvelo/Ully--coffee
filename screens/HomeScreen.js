@@ -110,7 +110,7 @@ export default function HomeScreen() {
     } else if (key === 'editProfile' || key === 'settings') {
       navigation.navigate('Profile');
     } else if (key === 'resources') {
-      navigation.getParent().navigate('Diagnostic', { type: 'resources' });
+      navigation.navigate('AI');
     }
   };
 

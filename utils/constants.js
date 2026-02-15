@@ -38,20 +38,3 @@ export const EquipmentTypes = {
   scale: { label: 'Scale', icon: '⚖️' },
 };
 
-export const DiagnosticTypes = {
-  extraction: {
-    label: 'Extraction Analysis',
-    icon: '☕',
-    description: 'Dial-in suggestions',
-  },
-  part: {
-    label: 'Scan Equipment',
-    icon: '🔧',
-    description: 'Identify equipment related issues and get recommendations',
-  },
-  resources: {
-    label: 'Resources',
-    icon: '📊',
-    description: 'Data analysis and volumetrics',
-  },
-};

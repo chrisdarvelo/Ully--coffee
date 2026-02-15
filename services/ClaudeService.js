@@ -24,13 +24,22 @@ class ClaudeService {
     }
   }
 
-  async sendRequest(messages, maxTokens = 1024) {
+  async sendRequest(messages, maxTokens = 1024, systemPrompt = null) {
     if (!this.apiKey) {
       throw new Error('Claude API key not configured. Set CLAUDE_API_KEY in .env');
     }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    const body = {
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      messages,
+    };
+    if (systemPrompt) {
+      body.system = systemPrompt;
+    }
 
     let response;
     try {
@@ -41,11 +50,7 @@ class ClaudeService {
           'x-api-key': this.apiKey,
           'anthropic-version': '2023-06-01',
         },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: maxTokens,
-          messages,
-        }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
     } catch (error) {
@@ -67,6 +72,16 @@ class ClaudeService {
       throw new Error('Unexpected response from Claude API.');
     }
     return data.content[0].text;
+  }
+
+  /**
+   * Multi-turn conversation with full message history.
+   * @param {Array} messages - Array of { role: 'user'|'assistant', content: string|Array }
+   * @param {string} systemPrompt - System prompt for the conversation
+   * @param {number} maxTokens - Max response tokens
+   */
+  async chatWithHistory(messages, systemPrompt, maxTokens = 1024) {
+    return this.sendRequest(messages, maxTokens, systemPrompt);
   }
 
   async diagnoseExtraction(base64Image, machineModel, context) {
