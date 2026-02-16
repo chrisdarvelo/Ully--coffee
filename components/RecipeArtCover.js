@@ -17,7 +17,7 @@ function generateLam(rand, w, h) {
 
   // Background wash
   elements.push(
-    <Rect key="bg" width={w} height={h} fill="#F2E8D5" />
+    <Rect key="bg" width={w} height={h} fill="#2A2320" />
   );
 
   // Organic curved shapes
@@ -146,7 +146,7 @@ function generatePicasso(rand, w, h) {
 
   // Cream background
   elements.push(
-    <Rect key="bg" width={w} height={h} fill="#F5F0E1" />
+    <Rect key="bg" width={w} height={h} fill="#252019" />
   );
 
   // Angular geometric shapes

@@ -17,6 +17,12 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
+import * as VideoThumbnails from 'expo-video-thumbnails';
+import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, { Path, Line } from 'react-native-svg';
 import { auth } from '../services/FirebaseConfig';
@@ -66,6 +72,15 @@ function BookIcon({ color, size }) {
 function buildApiMessages(messages) {
   return messages.map((msg) => {
     const role = msg.role === 'ully' ? 'assistant' : 'user';
+    if (msg.frames && msg.frames.length > 0) {
+      // Multi-frame video analysis
+      const content = msg.frames.map((frame) => ({
+        type: 'image',
+        source: { type: 'base64', media_type: 'image/jpeg', data: frame },
+      }));
+      content.push({ type: 'text', text: msg.text });
+      return { role, content };
+    }
     if (msg.image) {
       return {
         role,
@@ -82,6 +97,30 @@ function buildApiMessages(messages) {
   });
 }
 
+/**
+ * Extract evenly-spaced frames from a video and return as base64 strings.
+ * Uses expo-video-thumbnails to grab frames at intervals.
+ */
+async function extractFrames(videoUri, count = 5, durationMs = 10000) {
+  const frames = [];
+  for (let i = 0; i < count; i++) {
+    const time = Math.round((i / (count - 1)) * durationMs);
+    try {
+      const { uri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
+        time,
+        quality: 0.7,
+      });
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      frames.push(base64);
+    } catch {
+      // skip frames that fail (e.g. past end of video)
+    }
+  }
+  return frames;
+}
+
 export default function AIScreen() {
   const user = auth.currentUser;
   const name = user?.email ? user.email.split('@')[0] : 'friend';
@@ -96,11 +135,14 @@ export default function AIScreen() {
   // Camera state
   const [showCamera, setShowCamera] = useState(false);
   const [cameraMode, setCameraMode] = useState(null); // 'scan' | 'extraction'
+  const [recording, setRecording] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
 
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
+  const burstRef = useRef(null);
+  const burstFramesRef = useRef([]);
 
   useEffect(() => {
     loadHistory();
@@ -121,7 +163,12 @@ export default function AIScreen() {
       id: Date.now().toString(),
       preview: preview.length > 50 ? preview.slice(0, 50) + '...' : preview,
       date: new Date().toLocaleDateString(),
-      messages: msgs.map((m) => ({ role: m.role, text: m.text, imageUri: m.imageUri })),
+      messages: msgs.map((m) => ({
+        role: m.role,
+        text: m.text,
+        imageUri: m.imageUri,
+        isVideo: !!m.frames,
+      })),
     };
     const updated = [entry, ...history].slice(0, 50);
     setHistory(updated);
@@ -130,8 +177,41 @@ export default function AIScreen() {
     } catch (e) {}
   }, [history]);
 
-  const toggleMic = () => {
-    setListening((v) => !v);
+  useSpeechRecognitionEvent('result', (event) => {
+    const transcript = event.results[0]?.transcript;
+    if (transcript) {
+      setQuery(transcript);
+      if (event.isFinal) {
+        setListening(false);
+      }
+    }
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    setListening(false);
+  });
+
+  useSpeechRecognitionEvent('error', () => {
+    setListening(false);
+  });
+
+  const toggleMic = async () => {
+    if (listening) {
+      ExpoSpeechRecognitionModule.stop();
+      setListening(false);
+      return;
+    }
+    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!granted) {
+      Alert.alert('Permission Required', 'Microphone access is needed for voice input.');
+      return;
+    }
+    setQuery('');
+    setListening(true);
+    ExpoSpeechRecognitionModule.start({
+      lang: 'en-US',
+      interimResults: true,
+    });
   };
 
   const sendToUlly = async (newMessages) => {
@@ -189,19 +269,76 @@ export default function AIScreen() {
     }
   };
 
-  const pickImage = async (mode) => {
+  const startBurst = () => {
+    if (!cameraRef.current || recording) return;
+    setRecording(true);
+    burstFramesRef.current = [];
+    // Take first frame immediately, then every 2s, up to 5 frames
+    const captureFrame = async () => {
+      if (!cameraRef.current) return;
+      try {
+        const p = await cameraRef.current.takePictureAsync({ quality: 0.6, base64: true });
+        burstFramesRef.current.push(p.base64);
+        if (burstFramesRef.current.length >= 5) stopBurst();
+      } catch {
+        // skip failed frames
+      }
+    };
+    captureFrame();
+    burstRef.current = setInterval(captureFrame, 2000);
+  };
+
+  const stopBurst = () => {
+    if (burstRef.current) {
+      clearInterval(burstRef.current);
+      burstRef.current = null;
+    }
+    if (!recording && burstFramesRef.current.length === 0) return;
+    setRecording(false);
+    const frames = [...burstFramesRef.current];
+    burstFramesRef.current = [];
+    if (frames.length > 0) {
+      handleBurstCaptured(frames);
+    }
+  };
+
+  const handleBurstCaptured = async (frames) => {
+    setShowCamera(false);
+
+    const promptText =
+      cameraMode === 'scan'
+        ? `Identify this coffee equipment from ${frames.length} photos taken in sequence. Provide: part name, manufacturer/model compatibility, what it does, signs of wear or damage, and where to source replacement parts.`
+        : `Analyze this espresso extraction sequence (${frames.length} frames captured over time). Observe the flow pattern, color progression, and consistency. Provide: what you observe across the sequence, channeling or uneven extraction, whether it looks under/over-extracted, recommended grind, dose, or timing adjustments. Be specific and actionable.`;
+
+    const userMsg = {
+      role: 'user',
+      text: promptText,
+      frames,
+    };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    await sendToUlly(newMessages);
+  };
+
+  const pickMedia = async (mode) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ['images', 'videos'],
         quality: 0.8,
         base64: true,
+        videoMaxDuration: 10,
       });
       if (!result.canceled && result.assets?.[0]) {
+        const asset = result.assets[0];
         setCameraMode(mode);
-        handlePhotoCaptured(result.assets[0]);
+        if (asset.type === 'video') {
+          handleVideoCaptured(asset.uri);
+        } else {
+          handlePhotoCaptured(asset);
+        }
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick image.');
+      Alert.alert('Error', 'Failed to pick media.');
     }
   };
 
@@ -224,6 +361,38 @@ export default function AIScreen() {
     await sendToUlly(newMessages);
   };
 
+  const handleVideoCaptured = async (videoUri) => {
+    setShowCamera(false);
+    setLoading(true);
+
+    try {
+      const frames = await extractFrames(videoUri, 5, 10000);
+      if (frames.length === 0) {
+        Alert.alert('Error', 'Could not extract frames from video.');
+        setLoading(false);
+        return;
+      }
+
+      const promptText =
+        cameraMode === 'scan'
+          ? `Identify this coffee equipment from ${frames.length} video frames. Provide: part name, manufacturer/model compatibility, what it does, signs of wear or damage, and where to source replacement parts.`
+          : `Analyze this espresso extraction sequence (${frames.length} frames from a video). Observe the flow pattern, color progression, and timing. Provide: what you observe across the sequence, channeling or uneven extraction, whether it looks under/over-extracted, recommended grind, dose, or timing adjustments. Be specific and actionable.`;
+
+      const userMsg = {
+        role: 'user',
+        text: promptText,
+        frames,
+        imageUri: videoUri,
+      };
+      const newMessages = [...messages, userMsg];
+      setMessages(newMessages);
+      await sendToUlly(newMessages);
+    } catch {
+      setLoading(false);
+      Alert.alert('Error', 'Failed to analyze video.');
+    }
+  };
+
   const openChat = (entry) => {
     setMessages(entry.messages);
     setShowHistory(false);
@@ -236,10 +405,11 @@ export default function AIScreen() {
 
   const hasMessages = messages.length > 0;
 
-  const cameraInstructions = {
-    scan: 'Take a clear photo of the part from multiple angles if possible',
-    extraction: 'Capture espresso extraction showing flow pattern, portafilter, or finished shot',
-  };
+  const cameraInstruction = recording
+    ? 'Recording... release to stop'
+    : cameraMode === 'scan'
+      ? 'Tap for photo, hold for video'
+      : 'Tap for photo, hold to record extraction';
 
   // Camera modal
   if (showCamera) {
@@ -251,7 +421,7 @@ export default function AIScreen() {
             <View style={styles.cameraOverlay}>
               <View style={styles.instructionBox}>
                 <Text style={styles.instructionBoxText}>
-                  {cameraInstructions[cameraMode] || ''}
+                  {cameraInstruction}
                 </Text>
               </View>
               <View style={styles.scanFrame}>
@@ -264,12 +434,18 @@ export default function AIScreen() {
             <View style={styles.cameraControls}>
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => setShowCamera(false)}
+                onPress={() => { stopBurst(); setShowCamera(false); setRecording(false); }}
               >
                 <Text style={styles.backButtonText}>{'\u2190'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
-                <View style={styles.captureButtonInner} />
+              <TouchableOpacity
+                style={[styles.captureButton, recording && styles.captureButtonRecording]}
+                onPress={recording ? stopBurst : takePicture}
+                onLongPress={startBurst}
+                delayLongPress={400}
+                activeOpacity={0.7}
+              >
+                <View style={recording ? styles.captureStopInner : styles.captureButtonInner} />
               </TouchableOpacity>
               <View style={{ width: 48 }} />
             </View>
@@ -335,7 +511,7 @@ export default function AIScreen() {
       <TouchableOpacity
         style={compact ? styles.toolbarBtn : styles.actionChip}
         onPress={() => openCamera('extraction')}
-        onLongPress={() => pickImage('extraction')}
+        onLongPress={() => pickMedia('extraction')}
         activeOpacity={0.7}
       >
         <PortafilterIcon size={compact ? 18 : 20} color={Colors.text} />
@@ -344,7 +520,7 @@ export default function AIScreen() {
       <TouchableOpacity
         style={compact ? styles.toolbarBtn : styles.actionChip}
         onPress={() => openCamera('scan')}
-        onLongPress={() => pickImage('scan')}
+        onLongPress={() => pickMedia('scan')}
         activeOpacity={0.7}
       >
         <ScanIcon size={compact ? 18 : 20} color={Colors.text} />
@@ -426,8 +602,13 @@ export default function AIScreen() {
                 {messages.map((msg, i) =>
                   msg.role === 'user' ? (
                     <View key={i} style={styles.userBubble}>
-                      {msg.imageUri && (
+                      {msg.imageUri && !msg.frames && !msg.isVideo && (
                         <Image source={{ uri: msg.imageUri }} style={styles.bubbleImage} />
+                      )}
+                      {(msg.frames || msg.isVideo) && (
+                        <View style={styles.videoBadge}>
+                          <Text style={styles.videoBadgeText}>Video ({msg.frames?.length || '?'} frames)</Text>
+                        </View>
                       )}
                       <Text style={styles.userText}>{msg.text}</Text>
                     </View>
@@ -629,7 +810,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   userText: {
-    color: '#fff',
+    color: AuthColors.buttonText,
     fontSize: 14,
     fontFamily: Fonts.mono,
     lineHeight: 20,
@@ -639,6 +820,19 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 10,
     marginBottom: 8,
+  },
+  videoBadge: {
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  videoBadgeText: {
+    color: AuthColors.buttonText,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
   },
   ullyBubble: {
     alignSelf: 'flex-start',
@@ -757,6 +951,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderWidth: 2,
     borderColor: '#ddd',
+  },
+  captureButtonRecording: {
+    borderColor: '#e74c3c',
+    backgroundColor: '#e74c3c',
+  },
+  captureStopInner: {
+    width: 28,
+    height: 28,
+    borderRadius: 4,
+    backgroundColor: 'white',
   },
   // History view
   historyContainer: {

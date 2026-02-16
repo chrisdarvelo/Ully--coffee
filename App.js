@@ -16,12 +16,9 @@ import HomeScreen from './screens/HomeScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import AIScreen from './screens/AIScreen';
-import DiagnosticScreen from './screens/DiagnosticScreen';
-import ResultScreen from './screens/ResultScreen';
 import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import BaristaDetailScreen from './screens/BaristaDetailScreen';
 import CafeDetailScreen from './screens/CafeDetailScreen';
-import EquipmentDetailScreen from './screens/EquipmentDetailScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
@@ -158,16 +155,6 @@ function AppNavigator({ onboarded }) {
         options={{ headerShown: false }}
       />
       <AppStack.Screen
-        name="Diagnostic"
-        component={DiagnosticScreen}
-        options={{ title: 'Diagnostic' }}
-      />
-      <AppStack.Screen
-        name="Result"
-        component={ResultScreen}
-        options={{ title: 'Results' }}
-      />
-      <AppStack.Screen
         name="RecipeDetail"
         component={RecipeDetailScreen}
         options={{ headerShown: false }}
@@ -181,11 +168,6 @@ function AppNavigator({ onboarded }) {
         name="CafeDetail"
         component={CafeDetailScreen}
         options={{ title: 'Cafe' }}
-      />
-      <AppStack.Screen
-        name="EquipmentDetail"
-        component={EquipmentDetailScreen}
-        options={{ title: 'Equipment' }}
       />
       <AppStack.Screen
         name="PrivacyPolicy"
@@ -259,7 +241,7 @@ export default function App() {
 
   return (
     <Animated.View style={[styles.root, { opacity: fadeAnim }]}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <NavigationContainer>
         {user ? (
           <AppNavigator onboarded={onboarded} />

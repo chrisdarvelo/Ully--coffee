@@ -56,9 +56,9 @@ export default function CoffeeFlower({ size = 150, spinning = false, bold = fals
   const innerAngles = [0, 72, 144, 216, 288].map((a) => a + 72);
   const centerRadius = size * 0.035;
   const strokeW = bold ? Math.max(size * 0.03, 0.8) : Math.max(size * 0.02, 0.5);
-  const strokeColor = dark ? '#3A3A3A' : bold ? '#C0B0A0' : '#DDD5CC';
+  const strokeColor = dark ? '#3A3A3A' : bold ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)';
   const fillColor = '#FFFFFF';
-  const centerFill = '#F5EDE4';
+  const centerFill = '#C8923C';
 
   const transform = spinning ? [{ rotate }] : [];
 

@@ -151,15 +151,22 @@ export default function HomeScreen() {
       onPress={() => navigation.navigate('BaristaDetail', { barista: item })}
       activeOpacity={0.7}
     >
-      {item.avatarUrl ? (
-        <Image source={{ uri: item.avatarUrl }} style={styles.baristaPhoto} />
-      ) : (
-        <View style={[styles.baristaAvatarFallback, { backgroundColor: item.avatarColor || Colors.primary }]}>
-          <Text style={styles.baristaAvatarText}>
-            {item.name.split(' ').map((w) => w[0]).join('')}
-          </Text>
-        </View>
-      )}
+      <View>
+        {item.avatarUrl ? (
+          <Image source={{ uri: item.avatarUrl }} style={[styles.baristaPhoto, item.followed && styles.baristaPhotoFollowed]} />
+        ) : (
+          <View style={[styles.baristaAvatarFallback, { backgroundColor: item.avatarColor || Colors.primary }]}>
+            <Text style={styles.baristaAvatarText}>
+              {item.name.split(' ').map((w) => w[0]).join('')}
+            </Text>
+          </View>
+        )}
+        {item.followed && (
+          <View style={styles.followBadge}>
+            <Text style={styles.followBadgeText}>{'\u2713'}</Text>
+          </View>
+        )}
+      </View>
       <Text style={styles.baristaName} numberOfLines={1}>{item.name.split(' ')[0]}</Text>
     </TouchableOpacity>
   );
@@ -242,6 +249,7 @@ export default function HomeScreen() {
             renderItem={renderRecipeCard}
             keyExtractor={(item) => item.id}
             onAdd={() => navigation.navigate('RecipeDetail', { isNew: true })}
+            emptyText="Tap + to create your first recipe"
           />
         </View>
 
@@ -251,6 +259,7 @@ export default function HomeScreen() {
             data={news}
             renderItem={renderNewsCard}
             keyExtractor={(item, i) => `news-${i}`}
+            emptyText="Pull down to refresh"
           />
         </View>
 
@@ -270,19 +279,19 @@ export default function HomeScreen() {
             renderItem={renderCafeCard}
             keyExtractor={(item) => item.id}
             onAdd={() => navigation.navigate('CafeDetail', { isNew: true })}
+            emptyText="Tap + to save your favorite cafes"
           />
         </View>
 
-        {blogs.length > 0 && (
-          <View>
-            <SectionRow
-              title="Blogs"
-              data={blogs}
-              renderItem={renderBlogCard}
-              keyExtractor={(item, i) => `blog-${i}`}
-            />
-          </View>
-        )}
+        <View>
+          <SectionRow
+            title="Blogs"
+            data={blogs}
+            renderItem={renderBlogCard}
+            keyExtractor={(item, i) => `blog-${i}`}
+            emptyText="Follow baristas to see their posts here"
+          />
+        </View>
       </ScrollView>
 
       <SideDrawer
@@ -398,7 +407,7 @@ const styles = StyleSheet.create({
   },
   blogTitle: {
     fontSize: 13,
-    color: '#666666',
+    color: Colors.textSecondary,
     fontFamily: Fonts.mono,
     fontWeight: '500',
     lineHeight: 18,
@@ -426,6 +435,28 @@ const styles = StyleSheet.create({
     borderRadius: 63,
     marginBottom: 10,
     backgroundColor: Colors.border,
+  },
+  baristaPhotoFollowed: {
+    borderWidth: 3,
+    borderColor: '#C8923C',
+  },
+  followBadge: {
+    position: 'absolute',
+    bottom: 8,
+    right: 2,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#C8923C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.background,
+  },
+  followBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   baristaAvatarFallback: {
     width: 126,

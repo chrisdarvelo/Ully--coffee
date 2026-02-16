@@ -5,8 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthColors, Fonts, Colors } from '../utils/constants';
 
 const LAST_UPDATED = 'February 15, 2026';
@@ -181,7 +181,7 @@ export default function PrivacyPolicyScreen({ navigation, route }) {
         <Section title="Contact">
           <Paragraph>
             If you have questions about this Privacy Policy or your data,
-            please contact us at: support@ullyapp.com
+            please contact us at: support@ullycoffee.com
           </Paragraph>
         </Section>
 

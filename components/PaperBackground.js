@@ -92,7 +92,7 @@ export default function PaperBackground({ children }) {
           <Polygon
             key={`sh-${i}`}
             points={s.points}
-            fill={s.dark ? '#B0A898' : '#FFFFFF'}
+            fill={s.dark ? '#0F0D0B' : '#2A2320'}
             opacity={s.opacity}
           />
         ))}
@@ -102,7 +102,7 @@ export default function PaperBackground({ children }) {
           <Path
             key={`cr-${i}`}
             d={c.d}
-            stroke="#B0A898"
+            stroke="#3D332A"
             strokeWidth={c.width}
             opacity={c.opacity}
             fill="none"
@@ -122,7 +122,7 @@ export default function PaperBackground({ children }) {
               y1={f.y1}
               x2={x2}
               y2={y2}
-              stroke="#C4B8A8"
+              stroke="#3D332A"
               strokeWidth={f.width}
               opacity={f.opacity}
               strokeLinecap="round"

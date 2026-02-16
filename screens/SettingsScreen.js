@@ -6,20 +6,31 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  Switch,
   Alert,
   ScrollView,
-  FlatList,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from '@react-navigation/native';
-import { signOut, sendPasswordResetEmail } from 'firebase/auth';
+import {
+  signOut,
+  sendPasswordResetEmail,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getProfile, saveProfile } from '../services/ProfileService';
-import { getEquipment } from '../services/EquipmentService';
+import {
+  registerForPushNotifications,
+  getNotificationPrefs,
+  saveNotificationPrefs,
+  scheduleDailyTip,
+} from '../services/NotificationService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
-import { EquipmentTypeIcon, EspressoMachineIcon } from '../components/DiagnosticIcons';
 
 export default function SettingsScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -31,20 +42,20 @@ export default function SettingsScreen({ navigation: tabNav }) {
   const [shops, setShops] = useState([]);
   const [shopInput, setShopInput] = useState('');
   const [avatarUri, setAvatarUri] = useState(null);
-  const [equipment, setEquipment] = useState([]);
+  const [notifEnabled, setNotifEnabled] = useState(false);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
-    const [profile, equip] = await Promise.all([
+    const [profile, notifPrefs] = await Promise.all([
       getProfile(user.uid),
-      getEquipment(user.uid),
+      getNotificationPrefs(),
     ]);
     if (profile) {
       setLocation(profile.location || '');
       setShops(profile.shops || []);
       setAvatarUri(profile.avatarUri || null);
     }
-    setEquipment(equip || []);
+    setNotifEnabled(notifPrefs.enabled);
   }, [user]);
 
   useFocusEffect(
@@ -76,6 +87,62 @@ export default function SettingsScreen({ navigation: tabNav }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your data (recipes, cafes, profile). This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            Alert.prompt(
+              'Confirm Password',
+              'Enter your password to confirm account deletion.',
+              async (password) => {
+                if (!password) return;
+                setLoading(true);
+                try {
+                  const credential = EmailAuthProvider.credential(user.email, password);
+                  await reauthenticateWithCredential(user, credential);
+                  // Clear all user data from AsyncStorage
+                  const keys = await AsyncStorage.getAllKeys();
+                  const userKeys = keys.filter((k) => k.includes(user.uid) || k === '@ully_chat_history');
+                  if (userKeys.length > 0) {
+                    await AsyncStorage.multiRemove(userKeys);
+                  }
+                  await deleteUser(user);
+                } catch (error) {
+                  setLoading(false);
+                  const msg =
+                    error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential'
+                      ? 'Incorrect password. Please try again.'
+                      : 'Failed to delete account. Please try again.';
+                  Alert.alert('Error', msg);
+                }
+              },
+              'secure-text',
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleToggleNotifications = async (value) => {
+    if (value) {
+      const token = await registerForPushNotifications();
+      if (!token) {
+        Alert.alert('Notifications', 'Please enable notifications in your device settings.');
+        return;
+      }
+    }
+    setNotifEnabled(value);
+    await saveNotificationPrefs({ enabled: value, dailyTip: true, newContent: true });
+    await scheduleDailyTip();
   };
 
   const handleSaveProfile = async () => {
@@ -227,54 +294,6 @@ export default function SettingsScreen({ navigation: tabNav }) {
       </View>
 
       <View style={styles.section}>
-        <View style={styles.equipHeader}>
-          <Text style={styles.sectionTitle}>Your Equipment</Text>
-          <TouchableOpacity
-            style={styles.equipAddBtn}
-            onPress={() => navigation.navigate('EquipmentDetail')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.equipAddBtnText}>+</Text>
-          </TouchableOpacity>
-        </View>
-
-        {equipment.length === 0 ? (
-          <TouchableOpacity
-            style={styles.emptyEquipCard}
-            onPress={() => navigation.navigate('EquipmentDetail')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.emptyEquipIcon}>
-              <EspressoMachineIcon size={28} color={Colors.text} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rowText}>Add your first machine</Text>
-              <Text style={styles.rowHint}>Tap to register your coffee equipment</Text>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <FlatList
-            data={equipment}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.equipList}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.equipCard}
-                onPress={() => navigation.navigate('EquipmentDetail', { item })}
-                activeOpacity={0.7}
-              >
-                <EquipmentTypeIcon type={item.type} size={26} color={Colors.text} />
-                <Text style={styles.equipName} numberOfLines={1}>{item.name}</Text>
-                {item.brand ? <Text style={styles.equipBrand} numberOfLines={1}>{item.brand}</Text> : null}
-              </TouchableOpacity>
-            )}
-          />
-        )}
-      </View>
-
-      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Settings</Text>
 
         <TouchableOpacity
@@ -289,29 +308,20 @@ export default function SettingsScreen({ navigation: tabNav }) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.row}
-          activeOpacity={0.7}
-          disabled
-        >
+        <View style={styles.row}>
           <Text style={styles.rowIcon}>&#128276;</Text>
           <View style={styles.rowBody}>
             <Text style={styles.rowText}>Notifications</Text>
-            <Text style={styles.rowHint}>Coming soon</Text>
+            <Text style={styles.rowHint}>Daily coffee tips</Text>
           </View>
-        </TouchableOpacity>
+          <Switch
+            value={notifEnabled}
+            onValueChange={handleToggleNotifications}
+            trackColor={{ false: Colors.border, true: Colors.primary }}
+            thumbColor="#FFFFFF"
+          />
+        </View>
 
-        <TouchableOpacity
-          style={styles.row}
-          activeOpacity={0.7}
-          disabled
-        >
-          <Text style={styles.rowIcon}>&#128208;</Text>
-          <View style={styles.rowBody}>
-            <Text style={styles.rowText}>Units & Preferences</Text>
-            <Text style={styles.rowHint}>Coming soon</Text>
-          </View>
-        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.row}
@@ -333,6 +343,14 @@ export default function SettingsScreen({ navigation: tabNav }) {
           activeOpacity={0.7}
         >
           <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteRow}
+          onPress={handleDeleteAccount}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.deleteText}>Delete Account</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -549,65 +567,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
     fontWeight: '700',
   },
-  // Equipment styles
-  equipHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  equipAddBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: AuthColors.buttonFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  equipAddBtnText: {
-    color: AuthColors.buttonText,
-    fontSize: 18,
-    fontWeight: '700',
-    fontFamily: Fonts.mono,
-    lineHeight: 20,
-  },
-  equipList: {
-    gap: 10,
-  },
-  equipCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 10,
-    padding: 14,
-    width: 120,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  equipName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.text,
-    fontFamily: Fonts.mono,
-    textAlign: 'center',
-  },
-  equipBrand: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.mono,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  emptyEquipCard: {
-    backgroundColor: Colors.card,
+  deleteRow: {
     borderRadius: 10,
     padding: 16,
-    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderStyle: 'dashed',
+    marginTop: 8,
   },
-  emptyEquipIcon: {
-    marginRight: 14,
+  deleteText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
   },
 });

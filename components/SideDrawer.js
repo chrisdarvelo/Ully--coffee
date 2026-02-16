@@ -64,7 +64,7 @@ export default function SideDrawer({ visible, onClose, onNavigate }) {
     <View style={StyleSheet.absoluteFill} pointerEvents={visible ? 'auto' : 'none'}>
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]}>
-          <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
           <View style={styles.overlay} />
         </Animated.View>
       </TouchableWithoutFeedback>
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: 'rgba(245, 240, 235, 0.64)',
+    backgroundColor: 'rgba(37, 32, 25, 0.85)',
     borderRightWidth: 1,
     borderRightColor: Colors.border,
     paddingTop: 80,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     fontSize: 15,
-    color: '#555555',
+    color: Colors.text,
     fontFamily: Fonts.mono,
     fontWeight: '500',
   },

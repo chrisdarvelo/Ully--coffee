@@ -7,9 +7,9 @@ export default {
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
-    userInterfaceStyle: 'light',
+    userInterfaceStyle: 'dark',
     splash: {
-      backgroundColor: '#F5F0EB',
+      backgroundColor: '#1A1614',
     },
     ios: {
       supportsTablet: true,
@@ -23,7 +23,8 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        backgroundColor: '#F5F0EB',
+        foregroundImage: './assets/adaptive-icon.png',
+        backgroundColor: '#1A1614',
       },
       package: 'com.ullycoffee.app',
       permissions: ['CAMERA', 'READ_EXTERNAL_STORAGE'],

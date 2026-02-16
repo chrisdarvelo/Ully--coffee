@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 
-export default function SectionRow({ title, data, renderItem, onAdd, keyExtractor }) {
+export default function SectionRow({ title, data, renderItem, onAdd, keyExtractor, emptyText }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -13,14 +13,20 @@ export default function SectionRow({ title, data, renderItem, onAdd, keyExtracto
           </TouchableOpacity>
         )}
       </View>
-      <FlatList
-        horizontal
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor || ((item, index) => String(index))}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-      />
+      {data.length === 0 && emptyText ? (
+        <View style={styles.emptyWrap}>
+          <Text style={styles.emptyText}>{emptyText}</Text>
+        </View>
+      ) : (
+        <FlatList
+          horizontal
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor || ((item, index) => String(index))}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.list}
+        />
+      )}
     </View>
   );
 }
@@ -61,5 +67,14 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 24,
     gap: 10,
+  },
+  emptyWrap: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontFamily: Fonts.mono,
   },
 });

@@ -11,9 +11,7 @@ import {
 } from 'react-native';
 import { auth } from '../services/FirebaseConfig';
 import { saveProfile } from '../services/ProfileService';
-import { saveEquipmentItem } from '../services/EquipmentService';
-import { Colors, AuthColors, Fonts, EquipmentTypes } from '../utils/constants';
-import { EquipmentTypeIcon } from '../components/DiagnosticIcons';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
 import PaperBackground from '../components/PaperBackground';
 import CoffeeFlower from '../components/CoffeeFlower';
 
@@ -22,7 +20,6 @@ export default function OnboardingScreen({ navigation }) {
   const [location, setLocation] = useState('');
   const [shopInput, setShopInput] = useState('');
   const [shops, setShops] = useState([]);
-  const [equipNames, setEquipNames] = useState({ machine: '', grinder: '', scale: '' });
   const [saving, setSaving] = useState(false);
 
   const user = auth.currentUser;
@@ -42,20 +39,6 @@ export default function OnboardingScreen({ navigation }) {
   const handleFinish = async () => {
     setSaving(true);
     try {
-      // Save equipment items that have names
-      for (const [type, name] of Object.entries(equipNames)) {
-        if (name.trim()) {
-          await saveEquipmentItem(user.uid, {
-            id: Date.now().toString() + '_' + type,
-            type,
-            name: name.trim(),
-            brand: '',
-            model: '',
-            notes: '',
-            addedAt: new Date().toISOString(),
-          });
-        }
-      }
       await saveProfile(user.uid, { location: location.trim(), shops });
       navigation.replace('Tabs');
     } catch {
@@ -94,7 +77,7 @@ export default function OnboardingScreen({ navigation }) {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.stepContainer}>
-            <Text style={styles.stepLabel}>1 / 3</Text>
+            <Text style={styles.stepLabel}>1 / 2</Text>
             <Text style={styles.stepTitle}>Where are you located?</Text>
             <Text style={styles.stepHint}>Your city or town</Text>
             <TextInput
@@ -132,7 +115,7 @@ export default function OnboardingScreen({ navigation }) {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            <Text style={styles.stepLabel}>2 / 3</Text>
+            <Text style={styles.stepLabel}>2 / 2</Text>
             <Text style={styles.stepTitle}>
               What are your favorite{'\n'}coffee shops?
             </Text>
@@ -168,11 +151,21 @@ export default function OnboardingScreen({ navigation }) {
             ))}
 
             <TouchableOpacity
-              style={[styles.button, styles.finishButton]}
-              onPress={() => setStep(3)}
+              style={[styles.button, styles.finishButton, saving && styles.buttonDisabled]}
+              onPress={handleFinish}
               activeOpacity={0.7}
+              disabled={saving}
             >
-              <Text style={styles.buttonText}>Next</Text>
+              <Text style={styles.buttonText}>{saving ? 'Saving...' : 'Finish'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.skipButton}
+              onPress={handleFinish}
+              activeOpacity={0.7}
+              disabled={saving}
+            >
+              <Text style={styles.skipText}>Skip</Text>
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -180,59 +173,7 @@ export default function OnboardingScreen({ navigation }) {
     );
   }
 
-  // Step 3: Equipment
-  return (
-    <PaperBackground>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.stepLabel}>3 / 3</Text>
-          <Text style={styles.stepTitle}>What equipment do{'\n'}you use?</Text>
-          <Text style={styles.stepHint}>Optional — you can add more later</Text>
-
-          {Object.entries(EquipmentTypes).map(([key, val]) => (
-            <View key={key} style={styles.equipRow}>
-              <EquipmentTypeIcon type={key} size={24} color={Colors.text} />
-              <TextInput
-                style={[styles.input, styles.inputFlex]}
-                value={equipNames[key]}
-                onChangeText={(text) =>
-                  setEquipNames((prev) => ({ ...prev, [key]: text }))
-                }
-                placeholder={`${val.label} name`}
-                placeholderTextColor={Colors.textSecondary}
-              />
-            </View>
-          ))}
-
-          <TouchableOpacity
-            style={[styles.button, styles.finishButton, saving && styles.buttonDisabled]}
-            onPress={handleFinish}
-            activeOpacity={0.7}
-            disabled={saving}
-          >
-            <Text style={styles.buttonText}>
-              {saving ? 'Saving...' : 'Finish'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={handleFinish}
-            activeOpacity={0.7}
-            disabled={saving}
-          >
-            <Text style={styles.skipText}>Skip</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </PaperBackground>
-  );
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -365,17 +306,6 @@ const styles = StyleSheet.create({
   },
   finishButton: {
     marginTop: 32,
-  },
-  equipRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  equipIcon: {
-    fontSize: 24,
-    width: 32,
-    textAlign: 'center',
   },
   skipButton: {
     alignItems: 'center',
