@@ -17,10 +17,15 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from 'expo-speech-recognition';
+let ExpoSpeechRecognitionModule = null;
+let useSpeechRecognitionEvent = () => {};
+try {
+  const speech = require('expo-speech-recognition');
+  ExpoSpeechRecognitionModule = speech.ExpoSpeechRecognitionModule;
+  useSpeechRecognitionEvent = speech.useSpeechRecognitionEvent;
+} catch {
+  // Native module not available (Expo Go) — mic button will show alert
+}
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -196,6 +201,10 @@ export default function AIScreen() {
   });
 
   const toggleMic = async () => {
+    if (!ExpoSpeechRecognitionModule) {
+      Alert.alert('Not Available', 'Voice input requires a development build.');
+      return;
+    }
     if (listening) {
       ExpoSpeechRecognitionModule.stop();
       setListening(false);
