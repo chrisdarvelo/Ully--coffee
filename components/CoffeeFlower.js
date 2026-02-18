@@ -2,26 +2,24 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, View, StyleSheet } from 'react-native';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 
-// Rounded petal — cubic bezier with a soft rounded tip instead of a sharp point
-function petalPath(cx, cy, length, width, angle) {
+// Spoon-shaped petal — narrow at center, fat rounded at the tip
+function spoonPetalPath(cx, cy, length, tipWidth, baseWidth, angle) {
   const rad = ((angle - 90) * Math.PI) / 180;
   const perpRad = rad + Math.PI / 2;
-
-  // Tip of the petal
   const tipX = cx + length * Math.cos(rad);
   const tipY = cy + length * Math.sin(rad);
 
-  // Wide control points at ~40% along the petal for the bulge
-  const bulgeDist = length * 0.4;
-  const bulgeX = cx + bulgeDist * Math.cos(rad);
-  const bulgeY = cy + bulgeDist * Math.sin(rad);
-  const b1x = bulgeX + width * Math.cos(perpRad);
-  const b1y = bulgeY + width * Math.sin(perpRad);
-  const b2x = bulgeX - width * Math.cos(perpRad);
-  const b2y = bulgeY - width * Math.sin(perpRad);
+  // Narrow base control points — skinny near center
+  const baseDist = length * 0.2;
+  const baseX = cx + baseDist * Math.cos(rad);
+  const baseY = cy + baseDist * Math.sin(rad);
+  const b1x = baseX + baseWidth * Math.cos(perpRad);
+  const b1y = baseY + baseWidth * Math.sin(perpRad);
+  const b2x = baseX - baseWidth * Math.cos(perpRad);
+  const b2y = baseY - baseWidth * Math.sin(perpRad);
 
-  // Tip control points — spread apart for a rounded tip
-  const tipSpread = width * 0.5;
+  // Fat rounded tip — wide spread at the end
+  const tipSpread = tipWidth * 0.85;
   const t1x = tipX + tipSpread * Math.cos(perpRad);
   const t1y = tipY + tipSpread * Math.sin(perpRad);
   const t2x = tipX - tipSpread * Math.cos(perpRad);
@@ -56,28 +54,47 @@ export default function CoffeeFlower({ size = 150, spinning = false, bold = fals
   });
 
   const center = size / 2;
-  // Outer petals — fatter, rounded
-  const outerLength = size * 0.42;
-  const outerWidth = size * 0.16;
+
+  // Outer petals — narrow at center, BIG fat rounded ends
+  const outerLength = size * 0.44;
+  const outerTipWidth = size * 0.22;
+  const outerBaseWidth = size * 0.06;
   const outerAngles = [0, 72, 144, 216, 288].map((a) => a + 36);
-  // Inner petals — wider and more visible, rotated between outer petals
-  const innerLength = size * 0.28;
-  const innerWidth = size * 0.10;
+
+  // Inner petals — same spoon shape but longer, thinner, still fat at tip
+  const innerLength = size * 0.30;
+  const innerTipWidth = size * 0.10;
+  const innerBaseWidth = size * 0.025;
   const innerAngles = [0, 72, 144, 216, 288].map((a) => a + 72);
-  const centerRadius = size * 0.035;
+
   const strokeW = bold ? Math.max(size * 0.03, 0.8) : Math.max(size * 0.02, 0.5);
   const strokeColor = dark ? '#3A3A3A' : bold ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)';
   const darkLineColor = dark ? '#2A2A2A' : '#1A1614';
   const fillColor = '#FFFFFF';
   const centerFill = '#C8923C';
 
-  // 3 center dots arranged in a triangle
+  // Stamen lines — from center circles to petal tips (orchid style)
+  const stamenLength = outerLength * 0.92;
+
+  // 3 center dots in a triangle
   const dotRadius = size * 0.025;
   const dotSpread = size * 0.045;
   const centerDots = [0, 120, 240].map((deg) => {
     const r = (deg * Math.PI) / 180;
     return { x: center + dotSpread * Math.cos(r), y: center + dotSpread * Math.sin(r) };
   });
+
+  // Micro dots scattered inside — like orchid speckles
+  const microRadius = size * 0.01;
+  const microSpread = size * 0.10;
+  const microDots = [30, 90, 150, 210, 270, 330, 0, 60, 120, 180, 240, 300].map((deg, i) => {
+    const r = (deg * Math.PI) / 180;
+    const dist = microSpread * (0.6 + (i % 3) * 0.2);
+    return { x: center + dist * Math.cos(r), y: center + dist * Math.sin(r) };
+  });
+
+  // Small circles at petal tips (orchid lip detail)
+  const tipDotRadius = size * 0.018;
 
   const baseRotation = '36deg';
   const transform = spinning
@@ -88,11 +105,11 @@ export default function CoffeeFlower({ size = 150, spinning = false, bold = fals
     <View style={[styles.container, { width: size, height: size }]}>
       <Animated.View style={{ transform }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {/* Outer petal fills */}
+          {/* Outer petal fills — fat rounded */}
           {outerAngles.map((angle) => (
             <Path
               key={`of-${angle}`}
-              d={petalPath(center, center, outerLength, outerWidth, angle)}
+              d={spoonPetalPath(center, center, outerLength, outerTipWidth, outerBaseWidth, angle)}
               fill={fillColor}
             />
           ))}
@@ -100,49 +117,76 @@ export default function CoffeeFlower({ size = 150, spinning = false, bold = fals
           {outerAngles.map((angle) => (
             <Path
               key={`os-${angle}`}
-              d={petalPath(center, center, outerLength, outerWidth, angle)}
+              d={spoonPetalPath(center, center, outerLength, outerTipWidth, outerBaseWidth, angle)}
               fill="none"
               stroke={strokeColor}
               strokeWidth={strokeW}
             />
           ))}
-          {/* Inner petal fills */}
+          {/* Inner petal fills — skinny */}
           {innerAngles.map((angle) => (
             <Path
               key={`if-${angle}`}
-              d={petalPath(center, center, innerLength, innerWidth, angle)}
+              d={spoonPetalPath(center, center, innerLength, innerTipWidth, innerBaseWidth, angle)}
               fill={fillColor}
             />
           ))}
-          {/* Inner petal strokes — darker for visibility */}
+          {/* Inner petal dark strokes */}
           {innerAngles.map((angle) => (
             <Path
               key={`is-${angle}`}
-              d={petalPath(center, center, innerLength, innerWidth, angle)}
+              d={spoonPetalPath(center, center, innerLength, innerTipWidth, innerBaseWidth, angle)}
               fill="none"
               stroke={darkLineColor}
               strokeWidth={strokeW * 1.2}
-              opacity={0.6}
+              opacity={0.5}
             />
           ))}
-          {/* Dark lines connecting inner petal tips to center dots */}
-          {innerAngles.map((angle) => {
+          {/* Stamen lines — center to outer petal tips */}
+          {outerAngles.map((angle) => {
             const rad = ((angle - 90) * Math.PI) / 180;
-            const tipX = center + innerLength * 0.5 * Math.cos(rad);
-            const tipY = center + innerLength * 0.5 * Math.sin(rad);
+            const tipX = center + stamenLength * Math.cos(rad);
+            const tipY = center + stamenLength * Math.sin(rad);
             return (
               <Line
-                key={`ln-${angle}`}
+                key={`st-${angle}`}
                 x1={center}
                 y1={center}
                 x2={tipX}
                 y2={tipY}
                 stroke={darkLineColor}
-                strokeWidth={strokeW * 0.8}
-                opacity={0.5}
+                strokeWidth={strokeW * 0.6}
+                opacity={0.35}
               />
             );
           })}
+          {/* Small circles at outer petal tips */}
+          {outerAngles.map((angle) => {
+            const rad = ((angle - 90) * Math.PI) / 180;
+            const tipX = center + stamenLength * Math.cos(rad);
+            const tipY = center + stamenLength * Math.sin(rad);
+            return (
+              <Circle
+                key={`tc-${angle}`}
+                cx={tipX}
+                cy={tipY}
+                r={tipDotRadius}
+                fill={centerFill}
+                opacity={0.7}
+              />
+            );
+          })}
+          {/* Micro dots — speckled inside like orchid */}
+          {microDots.map((dot, i) => (
+            <Circle
+              key={`md-${i}`}
+              cx={dot.x}
+              cy={dot.y}
+              r={microRadius}
+              fill={centerFill}
+              opacity={0.5}
+            />
+          ))}
           {/* 3 center dots in a triangle */}
           {centerDots.map((dot, i) => (
             <Circle key={`cd-${i}`} cx={dot.x} cy={dot.y} r={dotRadius} fill={centerFill} />
