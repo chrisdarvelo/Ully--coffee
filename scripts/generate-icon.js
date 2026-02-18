@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Generate app icon: black background, white coffee flower.
+ * Generate app icon: warm dark brown background, gold coffee flower.
  * Replicates CoffeeFlower.js petal geometry exactly.
+ * Colors match the app's espresso crema theme.
  *
  * Usage: node scripts/generate-icon.js
  * Requires: ImageMagick (convert)
@@ -12,6 +13,12 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 const ASSETS = path.join(__dirname, '..', 'assets');
+
+// Theme colors — espresso crema on dark slate
+const BG_COLOR = '#1A1614';        // warm dark brown (Colors.background)
+const PETAL_COLOR = '#C8923C';     // crema gold (Colors.primary)
+const CENTER_COLOR = '#1A1614';    // dark center dot
+const STROKE_COLOR = '#D4A54A';    // lighter gold stroke highlight
 
 function petalPath(cx, cy, length, width, angle) {
   const rad = ((angle - 90) * Math.PI) / 180;
@@ -42,12 +49,12 @@ function flowerPaths(size) {
   let svg = '';
   // Outer petals
   for (const a of outerAngles)
-    svg += `<path d="${petalPath(c, c, outerLen, outerW, a)}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="${sw}"/>\n`;
+    svg += `<path d="${petalPath(c, c, outerLen, outerW, a)}" fill="${PETAL_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw}"/>\n`;
   // Inner petals
   for (const a of innerAngles)
-    svg += `<path d="${petalPath(c, c, innerLen, innerW, a)}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="${sw * 0.7}"/>\n`;
+    svg += `<path d="${petalPath(c, c, innerLen, innerW, a)}" fill="${PETAL_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
   // Center dot
-  svg += `<circle cx="${c}" cy="${c}" r="${cr}" fill="#000000" stroke="#FFFFFF" stroke-width="${sw * 0.7}"/>\n`;
+  svg += `<circle cx="${c}" cy="${c}" r="${cr}" fill="${CENTER_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
   return svg;
 }
 
@@ -56,7 +63,7 @@ const flowerSize = 680;
 const offset = (SIZE - flowerSize) / 2;
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
-  <rect width="${SIZE}" height="${SIZE}" fill="#000000"/>
+  <rect width="${SIZE}" height="${SIZE}" fill="${BG_COLOR}"/>
   <g transform="translate(${offset}, ${offset})">
     ${flowerPaths(flowerSize)}
   </g>
@@ -68,13 +75,13 @@ const pngPath = path.join(ASSETS, 'icon.png');
 writeFileSync(svgPath, svg);
 execSync(`convert -background none -density 300 "${svgPath}" -resize 1024x1024 "${pngPath}"`);
 unlinkSync(svgPath);
-console.log('✓ assets/icon.png (1024x1024) — black bg, white flower');
+console.log('✓ assets/icon.png (1024x1024) — dark brown bg, gold flower');
 
 // Android adaptive icon — flower smaller to fit 72% safe zone
 const adaptiveFlower = 480;
 const adaptiveOffset = (SIZE - adaptiveFlower) / 2;
 const adaptiveSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
-  <rect width="${SIZE}" height="${SIZE}" fill="#000000"/>
+  <rect width="${SIZE}" height="${SIZE}" fill="${BG_COLOR}"/>
   <g transform="translate(${adaptiveOffset}, ${adaptiveOffset})">
     ${flowerPaths(adaptiveFlower)}
   </g>
