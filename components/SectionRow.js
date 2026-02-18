@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
+import { GoldGradient } from './GoldGradient';
 
 export default function SectionRow({ title, data, renderItem, onAdd, keyExtractor, emptyText }) {
   return (
@@ -8,8 +9,10 @@ export default function SectionRow({ title, data, renderItem, onAdd, keyExtracto
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
         {onAdd && (
-          <TouchableOpacity onPress={onAdd} style={styles.addButton} activeOpacity={0.7}>
-            <Text style={styles.addText}>+</Text>
+          <TouchableOpacity onPress={onAdd} activeOpacity={0.7}>
+            <GoldGradient style={styles.addButton}>
+              <Text style={styles.addText}>+</Text>
+            </GoldGradient>
           </TouchableOpacity>
         )}
       </View>
@@ -53,7 +56,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
   },

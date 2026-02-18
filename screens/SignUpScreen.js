@@ -15,6 +15,7 @@ import { auth } from '../services/FirebaseConfig';
 import { AuthColors, Fonts } from '../utils/constants';
 import { validatePassword, validateEmail } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { GoldButton } from '../components/GoldGradient';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -208,18 +209,14 @@ export default function SignUpScreen({ navigation }) {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.createButton, loading && styles.buttonDisabled]}
+            <GoldButton
+              label="Create Account"
               onPress={handleCreateAccount}
-              activeOpacity={0.8}
               disabled={loading}
-            >
-              {loading ? (
-                <CoffeeFlower size={24} spinning />
-              ) : (
-                <Text style={styles.createButtonText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
+              loading={loading}
+              loadingComponent={<CoffeeFlower size={24} spinning />}
+              style={{ marginTop: 8 }}
+            />
           </View>
 
           <View style={styles.footer}>
@@ -339,22 +336,6 @@ const styles = StyleSheet.create({
     color: AuthColors.link,
     fontWeight: '600',
     textDecorationLine: 'underline',
-  },
-  createButton: {
-    backgroundColor: AuthColors.buttonFill,
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  createButtonText: {
-    color: AuthColors.buttonText,
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Fonts.mono,
   },
   footer: {
     flexDirection: 'row',

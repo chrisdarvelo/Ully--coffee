@@ -11,6 +11,7 @@ import { sendEmailVerification, signOut } from 'firebase/auth';
 import { auth } from '../services/FirebaseConfig';
 import { AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { GoldButton } from '../components/GoldGradient';
 
 export default function VerifyEmailScreen({ onVerified }) {
   const [loading, setLoading] = useState(false);
@@ -92,18 +93,14 @@ export default function VerifyEmailScreen({ onVerified }) {
             : 'Check your inbox and click the link to verify your account.'}
         </Text>
 
-        <TouchableOpacity
-          style={[styles.primaryButton, loading && styles.buttonDisabled]}
+        <GoldButton
+          label="I've Verified"
           onPress={handleCheckVerification}
-          activeOpacity={0.8}
           disabled={loading}
-        >
-          {loading ? (
-            <CoffeeFlower size={24} spinning />
-          ) : (
-            <Text style={styles.primaryButtonText}>I've Verified</Text>
-          )}
-        </TouchableOpacity>
+          loading={loading}
+          loadingComponent={<CoffeeFlower size={24} spinning />}
+          style={{ width: '100%', marginBottom: 12, paddingHorizontal: 32 }}
+        />
 
         <TouchableOpacity
           style={[styles.secondaryButton, loading && styles.buttonDisabled]}
@@ -170,21 +167,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 32,
     lineHeight: 20,
-  },
-  primaryButton: {
-    backgroundColor: AuthColors.buttonFill,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 12,
-  },
-  primaryButtonText: {
-    color: AuthColors.buttonText,
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Fonts.mono,
   },
   secondaryButton: {
     paddingVertical: 14,

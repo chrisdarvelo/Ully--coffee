@@ -26,6 +26,7 @@ try {
 } catch {
   // Native module not available (Expo Go) — mic button will show alert
 }
+import { GoldGradient } from '../components/GoldGradient';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -501,12 +502,10 @@ export default function AIScreen() {
           )}
 
           <View style={styles.historyFooter}>
-            <TouchableOpacity
-              style={styles.newChatBtn}
-              onPress={startNewChat}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.newChatText}>New Chat</Text>
+            <TouchableOpacity onPress={startNewChat} activeOpacity={0.7}>
+              <GoldGradient style={styles.newChatBtn}>
+                <Text style={styles.newChatText}>New Chat</Text>
+              </GoldGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -610,7 +609,7 @@ export default function AIScreen() {
               >
                 {messages.map((msg, i) =>
                   msg.role === 'user' ? (
-                    <View key={i} style={styles.userBubble}>
+                    <GoldGradient key={i} style={styles.userBubble}>
                       {msg.imageUri && !msg.frames && !msg.isVideo && (
                         <Image source={{ uri: msg.imageUri }} style={styles.bubbleImage} />
                       )}
@@ -620,7 +619,7 @@ export default function AIScreen() {
                         </View>
                       )}
                       <Text style={styles.userText}>{msg.text}</Text>
-                    </View>
+                    </GoldGradient>
                   ) : (
                     <View key={i} style={styles.ullyBubble}>
                       <Text style={styles.ullyText}>{msg.text}</Text>
@@ -811,7 +810,6 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: AuthColors.buttonFill,
     borderRadius: 18,
     borderBottomRightRadius: 4,
     padding: 14,
@@ -1038,7 +1036,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 28,
     borderRadius: 20,
-    backgroundColor: AuthColors.buttonFill,
   },
   newChatText: {
     color: AuthColors.buttonText,

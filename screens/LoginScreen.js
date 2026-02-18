@@ -14,6 +14,7 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/aut
 import { auth } from '../services/FirebaseConfig';
 import { AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { GoldButton } from '../components/GoldGradient';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -94,18 +95,14 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.forgotText}>Forgot password?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.signInButton, loading && styles.buttonDisabled]}
+            <GoldButton
+              label="Sign In"
               onPress={handleSignIn}
-              activeOpacity={0.8}
               disabled={loading}
-            >
-              {loading ? (
-                <CoffeeFlower size={24} spinning />
-              ) : (
-                <Text style={styles.signInButtonText}>Sign In</Text>
-              )}
-            </TouchableOpacity>
+              loading={loading}
+              loadingComponent={<CoffeeFlower size={24} spinning />}
+              style={{ marginTop: 8 }}
+            />
           </View>
 
           <View style={styles.footer}>
@@ -170,22 +167,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'right',
-    fontFamily: Fonts.mono,
-  },
-  signInButton: {
-    backgroundColor: AuthColors.buttonFill,
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  signInButtonText: {
-    color: AuthColors.buttonText,
-    fontSize: 16,
-    fontWeight: '600',
     fontFamily: Fonts.mono,
   },
   footer: {

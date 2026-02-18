@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthColors, Fonts } from '../utils/constants';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { GoldButton } from '../components/GoldGradient';
 
 export default function WelcomeScreen({ navigation }) {
   return (
@@ -24,13 +25,10 @@ export default function WelcomeScreen({ navigation }) {
         </View>
 
         <View style={styles.buttonSection}>
-          <TouchableOpacity
-            style={styles.signInButton}
+          <GoldButton
+            label="Sign In"
             onPress={() => navigation.navigate('Login')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.signInButtonText}>Sign In</Text>
-          </TouchableOpacity>
+          />
 
           <TouchableOpacity
             style={styles.createAccountButton}
@@ -85,18 +83,6 @@ const styles = StyleSheet.create({
   },
   buttonSection: {
     gap: 12,
-  },
-  signInButton: {
-    backgroundColor: AuthColors.buttonFill,
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-  },
-  signInButtonText: {
-    color: AuthColors.buttonText,
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Fonts.mono,
   },
   createAccountButton: {
     backgroundColor: 'transparent',

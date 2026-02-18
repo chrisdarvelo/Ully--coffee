@@ -31,6 +31,7 @@ import {
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { GoldGradient } from '../components/GoldGradient';
 
 export default function SettingsScreen({ navigation: tabNav }) {
   const navigation = tabNav.getParent();
@@ -209,11 +210,11 @@ export default function SettingsScreen({ navigation: tabNav }) {
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
           ) : (
-            <View style={styles.avatar}>
+            <GoldGradient style={styles.avatar}>
               <Text style={styles.avatarText}>
                 {name.charAt(0).toUpperCase()}
               </Text>
-            </View>
+            </GoldGradient>
           )}
           <View style={styles.avatarBadge}>
             <Text style={styles.avatarBadgeIcon}>&#9998;</Text>
@@ -265,11 +266,13 @@ export default function SettingsScreen({ navigation: tabNav }) {
                 onSubmitEditing={addShop}
               />
               <TouchableOpacity
-                style={[styles.addBtn, !shopInput.trim() && styles.addBtnDisabled]}
                 onPress={addShop}
                 disabled={!shopInput.trim()}
+                style={!shopInput.trim() ? { opacity: 0.4 } : undefined}
               >
-                <Text style={styles.addBtnText}>+</Text>
+                <GoldGradient style={styles.addBtn}>
+                  <Text style={styles.addBtnText}>+</Text>
+                </GoldGradient>
               </TouchableOpacity>
             </View>
 
@@ -282,12 +285,10 @@ export default function SettingsScreen({ navigation: tabNav }) {
               </View>
             ))}
 
-            <TouchableOpacity
-              style={styles.saveBtn}
-              onPress={handleSaveProfile}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.saveBtnText}>Save</Text>
+            <TouchableOpacity onPress={handleSaveProfile} activeOpacity={0.7}>
+              <GoldGradient style={styles.saveBtn}>
+                <Text style={styles.saveBtnText}>Save</Text>
+              </GoldGradient>
             </TouchableOpacity>
           </View>
         )}
@@ -389,7 +390,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -505,14 +505,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addBtn: {
-    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  addBtnDisabled: {
-    opacity: 0.4,
   },
   addBtnText: {
     color: AuthColors.buttonText,
@@ -541,7 +538,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   saveBtn: {
-    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',

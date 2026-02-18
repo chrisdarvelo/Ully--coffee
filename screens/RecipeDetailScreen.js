@@ -14,6 +14,7 @@ import { auth } from '../services/FirebaseConfig';
 import { saveRecipe, deleteRecipe } from '../services/RecipeService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import RecipeArtCover from '../components/RecipeArtCover';
+import { GoldGradient } from '../components/GoldGradient';
 
 export default function RecipeDetailScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
@@ -115,8 +116,10 @@ export default function RecipeDetailScreen({ route, navigation }) {
           textAlignVertical="top"
         />
 
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.7}>
-          <Text style={styles.saveBtnText}>{isNew ? 'Create' : 'Save'}</Text>
+        <TouchableOpacity onPress={handleSave} activeOpacity={0.7}>
+          <GoldGradient style={styles.saveBtn}>
+            <Text style={styles.saveBtnText}>{isNew ? 'Create' : 'Save'}</Text>
+          </GoldGradient>
         </TouchableOpacity>
 
         {!isNew && recipe?.id && (
@@ -188,7 +191,6 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   saveBtn: {
-    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',

@@ -21,6 +21,7 @@ import CoffeeFlower from '../components/CoffeeFlower';
 import SectionRow from '../components/SectionRow';
 import RecipeArtCover from '../components/RecipeArtCover';
 import SideDrawer from '../components/SideDrawer';
+import { GoldGradient } from '../components/GoldGradient';
 
 const CARD_WIDTH = 150;
 const CARD_HEIGHT = 200;
@@ -228,16 +229,18 @@ export default function HomeScreen() {
       >
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.profileBtn}
             onPress={() => setDrawerOpen(true)}
             activeOpacity={0.7}
+            style={{ borderRadius: 20, overflow: 'hidden' }}
           >
             {profile?.avatarUri ? (
               <Image source={{ uri: profile.avatarUri }} style={styles.profileBtnImage} />
             ) : (
-              <Text style={styles.profileBtnText}>
-                {name.charAt(0).toUpperCase()}
-              </Text>
+              <GoldGradient style={styles.profileBtn}>
+                <Text style={styles.profileBtnText}>
+                  {name.charAt(0).toUpperCase()}
+                </Text>
+              </GoldGradient>
             )}
           </TouchableOpacity>
         </View>
@@ -325,10 +328,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: AuthColors.buttonFill,
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
   },
   profileBtnImage: {
     width: 40,

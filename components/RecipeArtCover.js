@@ -10,14 +10,13 @@ function seededRandom(seed) {
   };
 }
 
-// Wilfredo Lam - organic curves, earthy tones
+// Wilfredo Lam - organic curves, warm vibrant tones
 function generateLam(rand, w, h) {
-  const palette = ['#8B6914', '#2D5016', '#6B3A2A', '#C4956A', '#3C6E47', '#D4A853'];
+  const palette = ['#E8A63C', '#D45B2C', '#C4956A', '#F2C94C', '#E07040', '#D4A853'];
   const elements = [];
 
-  // Background wash
   elements.push(
-    <Rect key="bg" width={w} height={h} fill="#2A2320" />
+    <Rect key="bg" width={w} height={h} fill="#FAF3E8" />
   );
 
   // Organic curved shapes
@@ -37,11 +36,10 @@ function generateLam(rand, w, h) {
         key={`lam-${i}`}
         d={`M ${cx - r1} ${cy} Q ${cp1x} ${cp1y} ${cx + r1} ${cy} Q ${cp2x} ${cp2y} ${cx - r1} ${cy}`}
         fill={color}
-        opacity={0.6 + rand() * 0.3}
+        opacity={0.7 + rand() * 0.3}
       />
     );
 
-    // Small accent circles
     if (rand() > 0.4) {
       elements.push(
         <Circle
@@ -50,7 +48,7 @@ function generateLam(rand, w, h) {
           cy={cy + (rand() - 0.5) * 30}
           r={3 + rand() * 8}
           fill={palette[Math.floor(rand() * palette.length)]}
-          opacity={0.5 + rand() * 0.4}
+          opacity={0.6 + rand() * 0.4}
         />
       );
     }
@@ -68,7 +66,7 @@ function generateLam(rand, w, h) {
       <Path
         key={`lam-l-${i}`}
         d={`M ${startX} ${startY} Q ${cpx} ${cpy} ${endX} ${endY}`}
-        stroke="#2D2D1A"
+        stroke="#C8923C"
         strokeWidth={1 + rand() * 1.5}
         fill="none"
         opacity={0.4 + rand() * 0.3}
@@ -82,20 +80,20 @@ function generateLam(rand, w, h) {
 // Rothko - horizontal color field bands
 function generateRothko(rand, w, h) {
   const palettes = [
-    ['#8B2500', '#CD6600', '#FFD700', '#FF4500'],
-    ['#2E0854', '#4B0082', '#8B008B', '#DA70D6'],
-    ['#003366', '#006699', '#0099CC', '#66CCFF'],
-    ['#2F4F2F', '#3B7A57', '#6B8E23', '#9ACD32'],
+    ['#FF6B35', '#FFD166', '#FFFFFF', '#F77F00'],
+    ['#3A86FF', '#8ECAE6', '#FFFFFF', '#219EBC'],
+    ['#E63946', '#F4A261', '#FFFFFF', '#FFD166'],
+    ['#06D6A0', '#118AB2', '#FFFFFF', '#FFD166'],
   ];
   const palette = palettes[Math.floor(rand() * palettes.length)];
   const elements = [];
 
-  // Soft base
+  // White-ish soft base
   elements.push(
-    <Rect key="bg" width={w} height={h} fill={palette[0]} opacity={0.15} />
+    <Rect key="bg" width={w} height={h} fill="#F8F4EE" />
   );
 
-  // 2-3 large horizontal bands with soft edges
+  // 2-3 large horizontal bands
   const bands = 2 + Math.floor(rand() * 2);
   const bandHeight = h / (bands + 1);
 
@@ -113,12 +111,11 @@ function generateRothko(rand, w, h) {
         width={w - margin * 2}
         height={bh}
         fill={color}
-        opacity={0.7 + rand() * 0.25}
+        opacity={0.8 + rand() * 0.2}
         rx={2}
       />
     );
 
-    // Subtle overlay for depth
     if (rand() > 0.3) {
       const oy = y + rand() * bh * 0.3;
       elements.push(
@@ -129,7 +126,7 @@ function generateRothko(rand, w, h) {
           width={w - margin * 2 - 10}
           height={bh * 0.4}
           fill={palette[Math.floor(rand() * palette.length)]}
-          opacity={0.3 + rand() * 0.2}
+          opacity={0.4 + rand() * 0.2}
           rx={1}
         />
       );
@@ -139,14 +136,13 @@ function generateRothko(rand, w, h) {
   return elements;
 }
 
-// Picasso - cubist geometry, angular shapes
+// Picasso - cubist geometry, bold colors on white
 function generatePicasso(rand, w, h) {
-  const palette = ['#1A1A2E', '#E94560', '#0F3460', '#F5C518', '#16213E', '#FF6B35'];
+  const palette = ['#E63946', '#457B9D', '#F4A261', '#2A9D8F', '#F77F00', '#264653'];
   const elements = [];
 
-  // Cream background
   elements.push(
-    <Rect key="bg" width={w} height={h} fill="#252019" />
+    <Rect key="bg" width={w} height={h} fill="#FFFFFF" />
   );
 
   // Angular geometric shapes
@@ -172,7 +168,7 @@ function generatePicasso(rand, w, h) {
         key={`pic-${i}`}
         d={d}
         fill={color}
-        opacity={0.5 + rand() * 0.4}
+        opacity={0.6 + rand() * 0.35}
       />
     );
   }
@@ -183,9 +179,9 @@ function generatePicasso(rand, w, h) {
       <Path
         key={`pic-l-${i}`}
         d={`M ${rand() * w} ${rand() * h} L ${rand() * w} ${rand() * h}`}
-        stroke="#1A1A2E"
+        stroke="#264653"
         strokeWidth={1.5 + rand() * 2}
-        opacity={0.4 + rand() * 0.3}
+        opacity={0.3 + rand() * 0.3}
       />
     );
   }
@@ -199,7 +195,7 @@ function generatePicasso(rand, w, h) {
         cy={rand() * h}
         r={4 + rand() * 10}
         fill={palette[Math.floor(rand() * palette.length)]}
-        opacity={0.5 + rand() * 0.3}
+        opacity={0.5 + rand() * 0.4}
       />
     );
   }

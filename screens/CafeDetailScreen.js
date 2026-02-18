@@ -12,6 +12,7 @@ import { auth } from '../services/FirebaseConfig';
 import { addCafe, saveCafe, removeCafe } from '../services/CafeService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import { sanitizeText } from '../utils/validation';
+import { GoldGradient } from '../components/GoldGradient';
 
 export default function CafeDetailScreen({ route, navigation }) {
   const cafe = route.params?.cafe;
@@ -91,8 +92,10 @@ export default function CafeDetailScreen({ route, navigation }) {
         textAlignVertical="top"
       />
 
-      <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.7}>
-        <Text style={styles.saveBtnText}>{isNew ? 'Add' : 'Save'}</Text>
+      <TouchableOpacity onPress={handleSave} activeOpacity={0.7}>
+        <GoldGradient style={styles.saveBtn}>
+          <Text style={styles.saveBtnText}>{isNew ? 'Add' : 'Save'}</Text>
+        </GoldGradient>
       </TouchableOpacity>
 
       {!isNew && cafe?.id && (
@@ -144,7 +147,6 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   saveBtn: {
-    backgroundColor: AuthColors.buttonFill,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',

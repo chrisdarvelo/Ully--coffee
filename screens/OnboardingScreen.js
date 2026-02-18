@@ -14,6 +14,7 @@ import { saveProfile } from '../services/ProfileService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
 import PaperBackground from '../components/PaperBackground';
 import CoffeeFlower from '../components/CoffeeFlower';
+import { GoldButton, GoldGradient } from '../components/GoldGradient';
 
 export default function OnboardingScreen({ navigation }) {
   const [step, setStep] = useState(0);
@@ -56,13 +57,11 @@ export default function OnboardingScreen({ navigation }) {
             <Text style={styles.subtitle}>
               A few quick questions to personalize your experience.
             </Text>
-            <TouchableOpacity
-              style={styles.button}
+            <GoldButton
+              label="Get Started"
               onPress={() => setStep(1)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.buttonText}>Get Started</Text>
-            </TouchableOpacity>
+              style={{ borderRadius: 10, marginTop: 24 }}
+            />
           </View>
         </View>
       </PaperBackground>
@@ -90,14 +89,12 @@ export default function OnboardingScreen({ navigation }) {
               returnKeyType="next"
               onSubmitEditing={() => location.trim() && setStep(2)}
             />
-            <TouchableOpacity
-              style={[styles.button, !location.trim() && styles.buttonDisabled]}
+            <GoldButton
+              label="Next"
               onPress={() => setStep(2)}
-              activeOpacity={0.7}
               disabled={!location.trim()}
-            >
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
+              style={{ borderRadius: 10, marginTop: 24 }}
+            />
           </View>
         </KeyboardAvoidingView>
       </PaperBackground>
@@ -132,12 +129,14 @@ export default function OnboardingScreen({ navigation }) {
                 onSubmitEditing={addShop}
               />
               <TouchableOpacity
-                style={[styles.addButton, !shopInput.trim() && styles.buttonDisabled]}
                 onPress={addShop}
                 activeOpacity={0.7}
                 disabled={!shopInput.trim()}
+                style={!shopInput.trim() ? { opacity: 0.4 } : undefined}
               >
-                <Text style={styles.addButtonText}>+</Text>
+                <GoldGradient style={styles.addButton}>
+                  <Text style={styles.addButtonText}>+</Text>
+                </GoldGradient>
               </TouchableOpacity>
             </View>
 
@@ -150,14 +149,12 @@ export default function OnboardingScreen({ navigation }) {
               </View>
             ))}
 
-            <TouchableOpacity
-              style={[styles.button, styles.finishButton, saving && styles.buttonDisabled]}
+            <GoldButton
+              label={saving ? 'Saving...' : 'Finish'}
               onPress={handleFinish}
-              activeOpacity={0.7}
               disabled={saving}
-            >
-              <Text style={styles.buttonText}>{saving ? 'Saving...' : 'Finish'}</Text>
-            </TouchableOpacity>
+              style={{ borderRadius: 10, marginTop: 32 }}
+            />
 
             <TouchableOpacity
               style={styles.skipButton}
@@ -253,9 +250,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    backgroundColor: AuthColors.buttonFill,
     borderRadius: 10,
     width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -287,25 +284,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: Fonts.mono,
     paddingLeft: 10,
-  },
-  button: {
-    backgroundColor: AuthColors.buttonFill,
-    borderRadius: 10,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  buttonDisabled: {
-    opacity: 0.4,
-  },
-  buttonText: {
-    color: AuthColors.buttonText,
-    fontSize: 16,
-    fontWeight: '700',
-    fontFamily: Fonts.mono,
-  },
-  finishButton: {
-    marginTop: 32,
   },
   skipButton: {
     alignItems: 'center',

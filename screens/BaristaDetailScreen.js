@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { auth } from '../services/FirebaseConfig';
 import { toggleFollow } from '../services/BaristaService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
+import { GoldGradient } from '../components/GoldGradient';
 
 export default function BaristaDetailScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
@@ -40,15 +41,21 @@ export default function BaristaDetailScreen({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>{'\u2190'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleToggleFollow}
-          style={[styles.followBtn, followed && styles.followBtnActive]}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.followBtnText, followed && styles.followBtnTextActive]}>
-            {followed ? 'Following' : 'Follow'}
-          </Text>
-        </TouchableOpacity>
+        {followed ? (
+          <TouchableOpacity onPress={handleToggleFollow} activeOpacity={0.7}>
+            <GoldGradient style={styles.followBtnGradient}>
+              <Text style={styles.followBtnTextActive}>Following</Text>
+            </GoldGradient>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={handleToggleFollow}
+            style={styles.followBtn}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.followBtnText}>Follow</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -144,8 +151,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: AuthColors.buttonFill,
   },
-  followBtnActive: {
-    backgroundColor: AuthColors.buttonFill,
+  followBtnGradient: {
+    paddingHorizontal: 18,
+    paddingVertical: 7,
+    borderRadius: 20,
   },
   followBtnText: {
     fontSize: 13,

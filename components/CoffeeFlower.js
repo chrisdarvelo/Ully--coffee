@@ -60,7 +60,10 @@ export default function CoffeeFlower({ size = 150, spinning = false, bold = fals
   const fillColor = '#FFFFFF';
   const centerFill = '#C8923C';
 
-  const transform = spinning ? [{ rotate }] : [];
+  const baseRotation = '36deg';
+  const transform = spinning
+    ? [{ rotate }]
+    : [{ rotate: baseRotation }];
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
