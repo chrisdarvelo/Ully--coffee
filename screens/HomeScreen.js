@@ -17,6 +17,7 @@ import { getRecipes } from '../services/RecipeService';
 import { getCafes } from '../services/CafeService';
 import { getBaristas, getFollowedBlogPosts } from '../services/BaristaService';
 import { Colors, AuthColors, Fonts } from '../utils/constants';
+import { LinearGradient } from 'expo-linear-gradient';
 import CoffeeFlower from '../components/CoffeeFlower';
 import SectionRow from '../components/SectionRow';
 import RecipeArtCover from '../components/RecipeArtCover';
@@ -26,30 +27,49 @@ import { GoldGradient } from '../components/GoldGradient';
 const CARD_WIDTH = 150;
 const CARD_HEIGHT = 200;
 
+// Farm-oriented coffee images — plants, processing, roasting, origin
 const CAFE_IMAGES = [
-  'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1559305616-3f99cd43e353?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1493857671505-72967e2e2760?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1525610553991-2bede1a236e2?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1524350876685-274059332603?w=300&h=200&fit=crop', // coffee farm rows
+  'https://images.unsplash.com/photo-1611070960620-f0e3e2b1d082?w=300&h=200&fit=crop', // coffee cherries on branch
+  'https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=300&h=200&fit=crop', // green beans drying
+  'https://images.unsplash.com/photo-1610632380989-680fe40816c6?w=300&h=200&fit=crop', // coffee roasting
+  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=200&fit=crop', // coffee farm landscape
+  'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=300&h=200&fit=crop', // roasted beans close up
+  'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=300&h=200&fit=crop', // green coffee plants
+  'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=300&h=200&fit=crop', // harvest baskets
+  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=300&h=200&fit=crop', // cupping session
+  'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop', // plantation aerial
 ];
 
 const COFFEE_IMAGES = [
-  'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1524350876685-274059332603?w=300&h=200&fit=crop', // coffee farm
+  'https://images.unsplash.com/photo-1611070960620-f0e3e2b1d082?w=300&h=200&fit=crop', // cherries
+  'https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=300&h=200&fit=crop', // drying beds
+  'https://images.unsplash.com/photo-1610632380989-680fe40816c6?w=300&h=200&fit=crop', // roasting
+  'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=300&h=200&fit=crop', // roasted beans
+  'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=300&h=200&fit=crop', // coffee plants
+  'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=300&h=200&fit=crop', // farm workers
+  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=300&h=200&fit=crop', // cupping
+  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=200&fit=crop', // landscape
+  'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop', // plantation
+];
+
+const COFFEE_FUN_FACTS = [
+  'Coffee is the seed of a cherry-like fruit. Coffee trees produce sweet cherries that turn bright red when ripe.',
+  'Brazil produces about 1/3 of the world\'s coffee, making it the largest producer for over 150 years.',
+  'A coffee tree takes 3-5 years to produce its first crop. Patience is part of the process.',
+  'The word "espresso" means "pressed out" in Italian, referring to how the coffee is made under pressure.',
+  'Coffee was discovered by an Ethiopian goat herder named Kaldi who noticed his goats dancing after eating coffee cherries.',
+  'There are over 120 species of coffee, but we mainly drink two: Arabica (60%) and Robusta (40%).',
+  'Coffee is grown in the "Bean Belt" — the area between the Tropics of Cancer and Capricorn.',
+  'A single coffee tree produces about 1-2 pounds of roasted coffee per year.',
+  'Green coffee beans can be stored for over a year, but roasted beans start losing flavor within weeks.',
+  'Water temperature for espresso should be between 195°F and 205°F (90-96°C) for optimal extraction.',
+  'The crema on espresso is created by CO2 gas trapped in oils, released under pressure during brewing.',
+  'Coffee cherries are usually picked by hand. A skilled picker can harvest 100-200 pounds per day.',
+  'Honey processing doesn\'t involve honey — it refers to the sticky mucilage left on the bean during drying.',
+  'Light roasts actually have more caffeine than dark roasts. Roasting burns off caffeine.',
+  'The first webcam was invented at Cambridge to monitor a coffee pot so researchers wouldn\'t make wasted trips.',
 ];
 
 export default function HomeScreen() {
@@ -67,6 +87,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [funFact] = useState(() => COFFEE_FUN_FACTS[Math.floor(Math.random() * COFFEE_FUN_FACTS.length)]);
 
   const loadData = useCallback(async () => {
     const uid = user?.uid;
@@ -121,10 +142,16 @@ export default function HomeScreen() {
       onPress={() => Linking.openURL(item.link)}
       activeOpacity={0.7}
     >
-      <Image
-        source={{ uri: COFFEE_IMAGES[index % COFFEE_IMAGES.length] }}
-        style={styles.cardImage}
-      />
+      <View style={styles.cardImageWrap}>
+        <Image
+          source={{ uri: COFFEE_IMAGES[index % COFFEE_IMAGES.length] }}
+          style={styles.cardImage}
+        />
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.7)']}
+          style={styles.imageOverlay}
+        />
+      </View>
       <View style={styles.cardBody}>
         <Text style={styles.cardSource}>{item.source}</Text>
         <Text style={styles.cardTitle} numberOfLines={3}>{item.title}</Text>
@@ -178,10 +205,16 @@ export default function HomeScreen() {
       onPress={() => navigation.navigate('CafeDetail', { cafe: item })}
       activeOpacity={0.7}
     >
-      <Image
-        source={{ uri: CAFE_IMAGES[index % CAFE_IMAGES.length] }}
-        style={styles.cardImage}
-      />
+      <View style={styles.cardImageWrap}>
+        <Image
+          source={{ uri: CAFE_IMAGES[index % CAFE_IMAGES.length] }}
+          style={styles.cardImage}
+        />
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.7)']}
+          style={styles.imageOverlay}
+        />
+      </View>
       <View style={styles.cardBody}>
         <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
         {item.location ? (
@@ -243,6 +276,11 @@ export default function HomeScreen() {
               </GoldGradient>
             )}
           </TouchableOpacity>
+        </View>
+
+        <View style={styles.funFactCard}>
+          <Text style={styles.funFactLabel}>Did you know?</Text>
+          <Text style={styles.funFactText}>{funFact}</Text>
         </View>
 
         <View>
@@ -342,6 +380,31 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: Fonts.mono,
   },
+  funFactCard: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  funFactLabel: {
+    fontSize: 11,
+    color: Colors.primary,
+    fontFamily: Fonts.mono,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  funFactText: {
+    fontSize: 13,
+    color: Colors.text,
+    fontFamily: Fonts.mono,
+    lineHeight: 19,
+  },
   loadingWrap: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -371,10 +434,20 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     overflow: 'hidden',
   },
+  cardImageWrap: {
+    position: 'relative',
+  },
   cardImage: {
     width: CARD_WIDTH,
     height: 90,
     backgroundColor: Colors.border,
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 35,
   },
   cardBody: {
     flex: 1,

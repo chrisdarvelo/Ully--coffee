@@ -517,22 +517,22 @@ export default function AIScreen() {
   const ActionChips = ({ compact }) => (
     <View style={compact ? styles.toolbarRow : styles.actionChipsRow}>
       <TouchableOpacity
-        style={compact ? styles.toolbarBtn : styles.actionChip}
+        style={compact ? styles.chatChip : styles.actionChip}
         onPress={() => openCamera('extraction')}
         onLongPress={() => pickMedia('extraction')}
         activeOpacity={0.7}
       >
-        <PortafilterIcon size={compact ? 18 : 20} color={Colors.text} />
-        {!compact && <Text style={styles.actionChipText}>Dial-in</Text>}
+        <PortafilterIcon size={compact ? 16 : 20} color={compact ? Colors.primary : Colors.text} />
+        <Text style={compact ? styles.chatChipText : styles.actionChipText}>Dial-in</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={compact ? styles.toolbarBtn : styles.actionChip}
+        style={compact ? styles.chatChip : styles.actionChip}
         onPress={() => openCamera('scan')}
         onLongPress={() => pickMedia('scan')}
         activeOpacity={0.7}
       >
-        <ScanIcon size={compact ? 18 : 20} color={Colors.text} />
-        {!compact && <Text style={styles.actionChipText}>Troubleshoot</Text>}
+        <ScanIcon size={compact ? 16 : 20} color={compact ? Colors.primary : Colors.text} />
+        <Text style={compact ? styles.chatChipText : styles.actionChipText}>Troubleshoot</Text>
       </TouchableOpacity>
     </View>
   );
@@ -754,19 +754,26 @@ const styles = StyleSheet.create({
   toolbarRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    paddingVertical: 6,
+    gap: 10,
+    paddingVertical: 8,
     paddingHorizontal: 20,
   },
-  toolbarBtn: {
-    width: 40,
-    height: 40,
+  chatChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: Colors.card,
     borderWidth: 1,
     borderColor: Colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  chatChipText: {
+    color: Colors.primary,
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: Fonts.mono,
   },
   searchWrap: {
     marginTop: 32,

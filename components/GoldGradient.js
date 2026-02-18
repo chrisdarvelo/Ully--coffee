@@ -3,16 +3,16 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthColors, Fonts } from '../utils/constants';
 
-// Gradient from lighter gold (bottom-left) to darker gold (top-right)
-const GOLD_COLORS = ['#D4A54A', '#C8923C', '#A07028'];
+// Bright gold on left → 30% darker gold on right
+const GOLD_COLORS = ['#E8B84A', '#C8923C', '#7A5518'];
 
 // Reusable gradient background — wraps any content
 export function GoldGradient({ style, children }) {
   return (
     <LinearGradient
       colors={GOLD_COLORS}
-      start={{ x: 0, y: 1 }}
-      end={{ x: 1, y: 0 }}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
       style={style}
     >
       {children}
