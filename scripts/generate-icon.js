@@ -22,17 +22,22 @@ const STROKE_COLOR = '#D4A54A';    // lighter gold stroke highlight
 
 function petalPath(cx, cy, length, width, angle) {
   const rad = ((angle - 90) * Math.PI) / 180;
+  const perpRad = rad + Math.PI / 2;
   const tipX = cx + length * Math.cos(rad);
   const tipY = cy + length * Math.sin(rad);
-  const perpRad = rad + Math.PI / 2;
-  const cpDist = length * 0.45;
-  const cpX = cx + cpDist * Math.cos(rad);
-  const cpY = cy + cpDist * Math.sin(rad);
-  const cp1x = cpX + width * Math.cos(perpRad);
-  const cp1y = cpY + width * Math.sin(perpRad);
-  const cp2x = cpX - width * Math.cos(perpRad);
-  const cp2y = cpY - width * Math.sin(perpRad);
-  return `M ${cx} ${cy} Q ${cp1x} ${cp1y} ${tipX} ${tipY} Q ${cp2x} ${cp2y} ${cx} ${cy} Z`;
+  const bulgeDist = length * 0.4;
+  const bulgeX = cx + bulgeDist * Math.cos(rad);
+  const bulgeY = cy + bulgeDist * Math.sin(rad);
+  const b1x = bulgeX + width * Math.cos(perpRad);
+  const b1y = bulgeY + width * Math.sin(perpRad);
+  const b2x = bulgeX - width * Math.cos(perpRad);
+  const b2y = bulgeY - width * Math.sin(perpRad);
+  const tipSpread = width * 0.5;
+  const t1x = tipX + tipSpread * Math.cos(perpRad);
+  const t1y = tipY + tipSpread * Math.sin(perpRad);
+  const t2x = tipX - tipSpread * Math.cos(perpRad);
+  const t2y = tipY - tipSpread * Math.sin(perpRad);
+  return `M ${cx} ${cy} C ${b1x} ${b1y} ${t1x} ${t1y} ${tipX} ${tipY} C ${t2x} ${t2y} ${b2x} ${b2y} ${cx} ${cy} Z`;
 }
 
 function flowerPaths(size) {
@@ -41,10 +46,12 @@ function flowerPaths(size) {
   const outerW = size * 0.16;
   const outerAngles = [0, 72, 144, 216, 288].map(a => a + 36);
   const innerLen = size * 0.28;
-  const innerW = size * 0.06;
+  const innerW = size * 0.10;
   const innerAngles = [0, 72, 144, 216, 288].map(a => a + 72);
-  const cr = size * 0.035;
   const sw = size * 0.008;
+  const dotR = size * 0.025;
+  const dotSpread = size * 0.045;
+  const darkLine = BG_COLOR;
 
   let svg = '';
   // Outer petals
@@ -53,8 +60,23 @@ function flowerPaths(size) {
   // Inner petals
   for (const a of innerAngles)
     svg += `<path d="${petalPath(c, c, innerLen, innerW, a)}" fill="${PETAL_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
-  // Center dot
-  svg += `<circle cx="${c}" cy="${c}" r="${cr}" fill="${CENTER_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
+  // Inner petal dark strokes for visibility
+  for (const a of innerAngles)
+    svg += `<path d="${petalPath(c, c, innerLen, innerW, a)}" fill="none" stroke="${darkLine}" stroke-width="${sw * 1.2}" opacity="0.6"/>\n`;
+  // Dark lines from center to inner petals
+  for (const a of innerAngles) {
+    const rad = ((a - 90) * Math.PI) / 180;
+    const tx = c + innerLen * 0.5 * Math.cos(rad);
+    const ty = c + innerLen * 0.5 * Math.sin(rad);
+    svg += `<line x1="${c}" y1="${c}" x2="${tx}" y2="${ty}" stroke="${darkLine}" stroke-width="${sw * 0.8}" opacity="0.5"/>\n`;
+  }
+  // 3 center dots in a triangle
+  for (const deg of [0, 120, 240]) {
+    const r = (deg * Math.PI) / 180;
+    const dx = c + dotSpread * Math.cos(r);
+    const dy = c + dotSpread * Math.sin(r);
+    svg += `<circle cx="${dx}" cy="${dy}" r="${dotR}" fill="${CENTER_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
+  }
   return svg;
 }
 

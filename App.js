@@ -135,7 +135,7 @@ function TabNavigator() {
 function AppNavigator({ onboarded }) {
   return (
     <AppStack.Navigator
-      initialRouteName={onboarded ? 'Tabs' : 'Onboarding'}
+      initialRouteName={'Tabs'}
       screenOptions={{
         headerStyle: { backgroundColor: Colors.background },
         headerTintColor: Colors.text,

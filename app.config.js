@@ -11,6 +11,12 @@ export default {
     splash: {
       backgroundColor: '#1A1614',
     },
+    updates: {
+      url: 'https://u.expo.dev/baf4d91f-12b9-47cd-b0b4-a01aadd37f08',
+    },
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.ullycoffee.app',
@@ -57,6 +63,9 @@ export default {
       ],
     ],
     extra: {
+      eas: {
+        projectId: 'baf4d91f-12b9-47cd-b0b4-a01aadd37f08',
+      },
       claudeApiKey: process.env.CLAUDE_API_KEY,
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
