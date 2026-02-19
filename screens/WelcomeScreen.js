@@ -16,7 +16,7 @@ export default function WelcomeScreen({ navigation }) {
       <View style={styles.content}>
         <View style={styles.brandSection}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>Ully</Text>
+            <Text style={styles.title}>Ully Ai</Text>
             <View style={styles.flowerWrap}>
               <CoffeeFlower size={36} />
             </View>

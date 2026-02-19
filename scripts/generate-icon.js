@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
- * Generate app icon: warm dark brown background, gold coffee flower.
- * Replicates CoffeeFlower.js petal geometry exactly.
- * Colors match the app's espresso crema theme.
+ * Generate app icon: dark brown background, white coffee blossom with gold stamens.
+ * Matches the new CoffeeFlower.js Coffea arabica blossom design.
  *
  * Usage: node scripts/generate-icon.js
  * Requires: ImageMagick (convert)
@@ -14,69 +13,75 @@ const path = require('path');
 
 const ASSETS = path.join(__dirname, '..', 'assets');
 
-// Theme colors — espresso crema on dark slate
-const BG_COLOR = '#1A1614';        // warm dark brown (Colors.background)
-const PETAL_COLOR = '#C8923C';     // crema gold (Colors.primary)
-const CENTER_COLOR = '#1A1614';    // dark center dot
-const STROKE_COLOR = '#D4A54A';    // lighter gold stroke highlight
+// Theme colors
+const BG_COLOR = '#0E0C0A';       // deep warm dark brown
+const PETAL_COLOR = '#FFFFFF';    // white petals
+const STAMEN_COLOR = '#C8A830';   // gold stamen filaments
+const ANTHER_COLOR = '#D4B840';   // brighter gold anther tips
+const CENTER_COLOR = '#FFFEF5';   // cream pistil
 
-function petalPath(cx, cy, length, width, angle) {
+// Coffee blossom petal: emerges narrow from center, flares wide at 55%, tapers to tip.
+function coffeePetalPath(cx, cy, length, maxWidth, baseWidth, angle) {
   const rad = ((angle - 90) * Math.PI) / 180;
   const perpRad = rad + Math.PI / 2;
+
   const tipX = cx + length * Math.cos(rad);
   const tipY = cy + length * Math.sin(rad);
-  const bulgeDist = length * 0.4;
-  const bulgeX = cx + bulgeDist * Math.cos(rad);
-  const bulgeY = cy + bulgeDist * Math.sin(rad);
-  const b1x = bulgeX + width * Math.cos(perpRad);
-  const b1y = bulgeY + width * Math.sin(perpRad);
-  const b2x = bulgeX - width * Math.cos(perpRad);
-  const b2y = bulgeY - width * Math.sin(perpRad);
-  const tipSpread = width * 0.5;
-  const t1x = tipX + tipSpread * Math.cos(perpRad);
-  const t1y = tipY + tipSpread * Math.sin(perpRad);
-  const t2x = tipX - tipSpread * Math.cos(perpRad);
-  const t2y = tipY - tipSpread * Math.sin(perpRad);
-  return `M ${cx} ${cy} C ${b1x} ${b1y} ${t1x} ${t1y} ${tipX} ${tipY} C ${t2x} ${t2y} ${b2x} ${b2y} ${cx} ${cy} Z`;
+
+  const baseDist = length * 0.14;
+  const baseMidX = cx + baseDist * Math.cos(rad);
+  const baseMidY = cy + baseDist * Math.sin(rad);
+
+  const wideDist = length * 0.55;
+  const wideMidX = cx + wideDist * Math.cos(rad);
+  const wideMidY = cy + wideDist * Math.sin(rad);
+
+  const rc1x = baseMidX + baseWidth * Math.cos(perpRad);
+  const rc1y = baseMidY + baseWidth * Math.sin(perpRad);
+  const rc2x = wideMidX + maxWidth * Math.cos(perpRad);
+  const rc2y = wideMidY + maxWidth * Math.sin(perpRad);
+
+  const lc1x = wideMidX - maxWidth * Math.cos(perpRad);
+  const lc1y = wideMidY - maxWidth * Math.sin(perpRad);
+  const lc2x = baseMidX - baseWidth * Math.cos(perpRad);
+  const lc2y = baseMidY - baseWidth * Math.sin(perpRad);
+
+  return `M ${cx} ${cy} C ${rc1x} ${rc1y} ${rc2x} ${rc2y} ${tipX} ${tipY} C ${lc1x} ${lc1y} ${lc2x} ${lc2y} ${cx} ${cy} Z`;
 }
 
-function flowerPaths(size) {
+function blossomPaths(size) {
   const c = size / 2;
-  const outerLen = size * 0.42;
-  const outerW = size * 0.16;
-  const outerAngles = [0, 72, 144, 216, 288].map(a => a + 36);
-  const innerLen = size * 0.28;
-  const innerW = size * 0.10;
-  const innerAngles = [0, 72, 144, 216, 288].map(a => a + 72);
-  const sw = size * 0.008;
-  const dotR = size * 0.025;
-  const dotSpread = size * 0.045;
-  const darkLine = BG_COLOR;
+  const petalLen = size * 0.45;
+  const petalMax = size * 0.085;
+  const petalBase = size * 0.018;
+  const petalAngles = [0, 60, 120, 180, 240, 300];
+
+  const stamenLen = size * 0.30;
+  const stamenAngles = [30, 90, 150, 210, 270, 330];
+  const antherR = size * 0.013;
+  const centerR = size * 0.042;
+  const sw = size * 0.004;
+  const stamenW = size * 0.008;
 
   let svg = '';
-  // Outer petals
-  for (const a of outerAngles)
-    svg += `<path d="${petalPath(c, c, outerLen, outerW, a)}" fill="${PETAL_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw}"/>\n`;
-  // Inner petals
-  for (const a of innerAngles)
-    svg += `<path d="${petalPath(c, c, innerLen, innerW, a)}" fill="${PETAL_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
-  // Inner petal dark strokes for visibility
-  for (const a of innerAngles)
-    svg += `<path d="${petalPath(c, c, innerLen, innerW, a)}" fill="none" stroke="${darkLine}" stroke-width="${sw * 1.2}" opacity="0.6"/>\n`;
-  // Dark lines from center to inner petals
-  for (const a of innerAngles) {
+
+  // 6 white petals
+  for (const a of petalAngles) {
+    svg += `<path d="${coffeePetalPath(c, c, petalLen, petalMax, petalBase, a)}" fill="${PETAL_COLOR}" stroke="rgba(180,170,160,0.15)" stroke-width="${sw}"/>\n`;
+  }
+
+  // 6 gold stamens
+  for (const a of stamenAngles) {
     const rad = ((a - 90) * Math.PI) / 180;
-    const tx = c + innerLen * 0.5 * Math.cos(rad);
-    const ty = c + innerLen * 0.5 * Math.sin(rad);
-    svg += `<line x1="${c}" y1="${c}" x2="${tx}" y2="${ty}" stroke="${darkLine}" stroke-width="${sw * 0.8}" opacity="0.5"/>\n`;
+    const tx = c + stamenLen * Math.cos(rad);
+    const ty = c + stamenLen * Math.sin(rad);
+    svg += `<line x1="${c}" y1="${c}" x2="${tx}" y2="${ty}" stroke="${STAMEN_COLOR}" stroke-width="${stamenW}"/>\n`;
+    svg += `<circle cx="${tx}" cy="${ty}" r="${antherR}" fill="${ANTHER_COLOR}"/>\n`;
   }
-  // 3 center dots in a triangle
-  for (const deg of [0, 120, 240]) {
-    const r = (deg * Math.PI) / 180;
-    const dx = c + dotSpread * Math.cos(r);
-    const dy = c + dotSpread * Math.sin(r);
-    svg += `<circle cx="${dx}" cy="${dy}" r="${dotR}" fill="${CENTER_COLOR}" stroke="${STROKE_COLOR}" stroke-width="${sw * 0.7}"/>\n`;
-  }
+
+  // Cream center pistil
+  svg += `<circle cx="${c}" cy="${c}" r="${centerR}" fill="${CENTER_COLOR}" stroke="${STAMEN_COLOR}" stroke-width="${sw * 0.5}"/>\n`;
+
   return svg;
 }
 
@@ -87,7 +92,7 @@ const offset = (SIZE - flowerSize) / 2;
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
   <rect width="${SIZE}" height="${SIZE}" fill="${BG_COLOR}"/>
   <g transform="translate(${offset}, ${offset})">
-    ${flowerPaths(flowerSize)}
+    ${blossomPaths(flowerSize)}
   </g>
 </svg>`;
 
@@ -97,7 +102,7 @@ const pngPath = path.join(ASSETS, 'icon.png');
 writeFileSync(svgPath, svg);
 execSync(`convert -background none -density 300 "${svgPath}" -resize 1024x1024 "${pngPath}"`);
 unlinkSync(svgPath);
-console.log('✓ assets/icon.png (1024x1024) — dark brown bg, gold flower');
+console.log('✓ assets/icon.png (1024x1024) — dark brown bg, white coffee blossom');
 
 // Android adaptive icon — flower smaller to fit 72% safe zone
 const adaptiveFlower = 480;
@@ -105,7 +110,7 @@ const adaptiveOffset = (SIZE - adaptiveFlower) / 2;
 const adaptiveSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
   <rect width="${SIZE}" height="${SIZE}" fill="${BG_COLOR}"/>
   <g transform="translate(${adaptiveOffset}, ${adaptiveOffset})">
-    ${flowerPaths(adaptiveFlower)}
+    ${blossomPaths(adaptiveFlower)}
   </g>
 </svg>`;
 

@@ -46,11 +46,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     color: Colors.text,
-    fontFamily: Fonts.mono,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontFamily: Fonts.header,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   addButton: {
     width: 28,
