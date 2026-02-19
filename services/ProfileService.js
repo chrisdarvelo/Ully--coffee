@@ -2,6 +2,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEY_PREFIX = '@ully_profile_';
 
+// Profile schema:
+// {
+//   onboarded: true,
+//   username: string,
+//   role: 'consumer' | 'barista' | 'organization',
+//   tier: 'free' | 'pro' | 'business',
+//   // Consumer
+//   dailyCoffees: '1' | '3' | 'more',
+//   favoriteMethod: 'drip' | 'espresso' | 'pour_over',
+//   drinkAt: 'home' | 'go_out',
+//   // Barista
+//   skillLevel: 'amateur' | 'semi_pro' | 'champion',
+//   baristaMethod: 'espresso' | 'pour_over' | 'other',
+//   favoriteRoaster: string (optional),
+//   // Organization
+//   employeeCount: '10' | '50' | 'more',
+//   orgType: 'roaster' | 'cafe' | 'distributor',
+//   businessType: 'retailer' | 'wholesaler',
+// }
+
 function profileKey(uid) {
   return `${KEY_PREFIX}${uid}`;
 }
