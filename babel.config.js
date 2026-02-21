@@ -8,10 +8,6 @@ module.exports = function (api) {
           typescript: { allExtensions: true, isTSX: true },
         },
       ],
-      '@babel/preset-flow',
-    ],
-    plugins: [
-      ['@babel/plugin-transform-flow-strip-types', { requireDirective: false }],
     ],
   };
 };

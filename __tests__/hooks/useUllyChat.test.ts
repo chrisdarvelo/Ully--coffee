@@ -174,6 +174,11 @@ describe('loadChatFromHistory', () => {
 
 // ─── Weather context injection ────────────────────────────────────────────────
 describe('weather context injection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+  });
+
   it('injects city and weather condition into the system prompt when context is available', async () => {
     mockGetWeather.mockResolvedValue({
       city: 'Seattle',

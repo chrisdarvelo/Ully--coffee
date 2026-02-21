@@ -14,6 +14,10 @@ module.exports = {
       '<rootDir>/node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock',
   },
   transform: {
+    // react-native@0.84 mixes Flow+TypeScript `as` assertions throughout its source.
+    // Strip TS assertions before handing to babel-jest; jest/mock.js is fully stubbed.
+    // Note: `react-native[\\/]` (with trailing slash) does NOT match react-native-svg etc.
+    'node_modules[\\/]react-native[\\/]': '<rootDir>/jest-rn-mock-transform.js',
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
   transformIgnorePatterns: [
