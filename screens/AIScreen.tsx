@@ -12,6 +12,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -66,6 +67,18 @@ function BookIcon({ color, size }: { color: string; size: number }) {
       />
       <Line x1="9" y1="7" x2="16" y2="7" stroke={color} strokeWidth={1.2} strokeLinecap="round" />
       <Line x1="9" y1="11" x2="14" y2="11" stroke={color} strokeWidth={1.2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function FlagIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
+        stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
+      />
+      <Line x1="4" y1="22" x2="4" y2="15" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -298,6 +311,27 @@ export default function AIScreen() {
     refreshFact();
   };
 
+  const handleFlagMessage = (text: string) => {
+    Alert.alert(
+      'Report Response',
+      'Flag this AI response as inaccurate or inappropriate?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Report',
+          style: 'destructive',
+          onPress: () => {
+            const subject = encodeURIComponent('Report AI Response');
+            const body = encodeURIComponent(
+              `I'd like to report the following Ully AI response:\n\n"${text}"\n\nReason (please describe):\n`
+            );
+            Linking.openURL(`mailto:support@ullycoffee.com?subject=${subject}&body=${body}`);
+          },
+        },
+      ]
+    );
+  };
+
   // UI Helpers
   const ActionChips = ({ compact }: { compact?: boolean }) => (
     <View style={compact ? styles.toolbarRow : styles.actionChipsRow}>
@@ -432,8 +466,19 @@ export default function AIScreen() {
                       <Text style={styles.userText}>{msg.text}</Text>
                     </GoldGradient>
                   ) : (
-                    <View key={i} style={styles.ullyBubble}>
-                      <Text style={styles.ullyText}>{msg.text}</Text>
+                    <View key={i} style={styles.ullyBubbleWrapper}>
+                      <View style={styles.ullyBubble}>
+                        <Text style={styles.ullyText}>{msg.text}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.flagBtn}
+                        onPress={() => handleFlagMessage(msg.text)}
+                        activeOpacity={0.6}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <FlagIcon color={Colors.tabInactive} size={13} />
+                        <Text style={styles.flagText}>Report</Text>
+                      </TouchableOpacity>
                     </View>
                   )
                 )}
@@ -676,14 +721,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.mono,
   },
-  ullyBubble: {
+  ullyBubbleWrapper: {
     alignSelf: 'flex-start',
+    maxWidth: '85%',
+    marginBottom: 12,
+  },
+  ullyBubble: {
     backgroundColor: Colors.card,
     borderRadius: 18,
     borderBottomLeftRadius: 4,
     padding: 14,
-    maxWidth: '85%',
-    marginBottom: 12,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -692,6 +739,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: Fonts.mono,
     lineHeight: 22,
+  },
+  flagBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    paddingLeft: 4,
+  },
+  flagText: {
+    fontSize: 11,
+    color: Colors.tabInactive,
+    fontFamily: Fonts.mono,
   },
   loadingRow: {
     alignSelf: 'flex-start',
