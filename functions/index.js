@@ -8,6 +8,36 @@ if (!getApps().length) initializeApp();
 
 const claudeApiKey = defineSecret('CLAUDE_API_KEY');
 
+// Free-tier daily message cap. Resets at midnight UTC.
+// Raise this when a paid tier is introduced — paid users bypass this check entirely.
+const FREE_DAILY_LIMIT = 20;
+
+/**
+ * Enforces a per-user daily message limit using a Firestore counter.
+ * The rateLimits collection is Admin-SDK-only; all client access is denied by
+ * the catch-all rule in firestore.rules so it cannot be spoofed from the device.
+ */
+async function enforceRateLimit(uid) {
+  const db = getFirestore();
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD UTC
+  const ref = db.collection('rateLimits').doc(uid);
+  const snap = await ref.get();
+  const data = snap.data();
+
+  if (data && data.date === today) {
+    if (data.count >= FREE_DAILY_LIMIT) {
+      throw new HttpsError(
+        'resource-exhausted',
+        `You've used all ${FREE_DAILY_LIMIT} of your free messages today. Your limit resets at midnight UTC.`
+      );
+    }
+    await ref.update({ count: data.count + 1 });
+  } else {
+    // First message of the day (or first ever) — reset counter.
+    await ref.set({ date: today, count: 1 });
+  }
+}
+
 /**
  * Ully AI — Firebase Cloud Function that proxies requests to the Claude API.
  * The API key is stored in Firebase Secret Manager and never exposed to the client.
@@ -19,6 +49,9 @@ exports.chatWithUlly = onCall(
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be signed in to use Ully.');
     }
+
+    const uid = request.auth.uid;
+    await enforceRateLimit(uid);
 
     const { messages, systemPrompt, maxTokens = 1024 } = request.data;
 

@@ -38,6 +38,8 @@ class ClaudeService {
       const result = await chatWithUlly({ messages, maxTokens, systemPrompt });
       return result.data.text;
     } catch (error: any) {
+      // Preserve rate-limit errors so useUllyChat can surface them specifically.
+      if (error?.code === 'functions/resource-exhausted') throw error;
       console.error('Firebase Function Error:', error);
       throw new Error(`AI assistant error: ${error.message}`);
     }

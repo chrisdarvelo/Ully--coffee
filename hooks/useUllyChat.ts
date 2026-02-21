@@ -114,10 +114,14 @@ export function useUllyChat() {
       const withReply: ChatMessage[] = [...newMessages, { role: 'ully', text: result }];
       setMessages(withReply);
       saveChat(withReply);
-    } catch (error) {
+    } catch (error: any) {
+      const isRateLimit = error?.code === 'functions/resource-exhausted';
+      const errorText = isRateLimit
+        ? error.message ?? `You've reached your free daily message limit. Your limit resets at midnight UTC.`
+        : 'Could not reach Ully AI. Check your connection and try again.';
       const withError: ChatMessage[] = [
         ...newMessages,
-        { role: 'ully', text: 'Could not reach Ully AI. Check your connection and try again.' },
+        { role: 'ully', text: errorText },
       ];
       setMessages(withError);
     } finally {
