@@ -1,7 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, Platform } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '../utils/constants';
+import { Colors, Fonts } from '../utils/constants';
 
 interface GoldGradientProps {
   children: React.ReactNode;
@@ -25,20 +25,25 @@ interface GoldButtonProps {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;
+  loadingComponent?: React.ReactNode;
   style?: ViewStyle | any;
   textStyle?: TextStyle;
 }
 
-export function GoldButton({ label, onPress, disabled, style, textStyle }: GoldButtonProps) {
+export function GoldButton({ label, onPress, disabled, loading, loadingComponent, style, textStyle }: GoldButtonProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      disabled={disabled}
-      style={[styles.button, style, disabled && styles.disabled]}
+      disabled={disabled || loading}
+      style={[styles.button, style, (disabled || loading) && styles.disabled]}
     >
       <GoldGradient style={styles.gradient}>
-        <Text style={[styles.text, textStyle]}>{label}</Text>
+        {loading && loadingComponent
+          ? loadingComponent
+          : <Text style={[styles.text, textStyle]}>{label}</Text>
+        }
       </GoldGradient>
     </TouchableOpacity>
   );
@@ -59,7 +64,7 @@ const styles = StyleSheet.create({
     color: '#0E0C0A',
     fontSize: 16,
     fontWeight: '700',
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace' }),
+    fontFamily: Fonts.mono,
   },
   disabled: {
     opacity: 0.5,

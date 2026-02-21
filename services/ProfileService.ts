@@ -22,7 +22,6 @@ export async function saveProfile(uid: string, data: Partial<UserProfile>): Prom
   const profile: UserProfile = {
     uid,
     email: auth.currentUser?.email ?? existing?.email ?? null,
-    onboarded: true,
     ...existing,
     ...data,
     onboarded: true,

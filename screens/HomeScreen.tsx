@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,10 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { RootStackParamList, TabParamList } from '../navigation/AppNavigator';
 import { auth } from '../services/FirebaseConfig';
 import { getProfile } from '../services/ProfileService';
 import { getNews } from '../services/NewsService';
@@ -30,7 +33,7 @@ import { Recipe, Barista, Cafe, NewsArticle, BlogPost } from '../types';
 const CARD_WIDTH = 150;
 const CARD_HEIGHT = 200;
 
-const CAFE_IMAGES = [
+const CARD_IMAGES = [
   'https://images.unsplash.com/photo-1524350876685-274059332603?w=300&h=200&fit=crop',
   'https://images.unsplash.com/photo-1611070960620-f0e3e2b1d082?w=300&h=200&fit=crop',
   'https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=300&h=200&fit=crop',
@@ -43,21 +46,13 @@ const CAFE_IMAGES = [
   'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop',
 ];
 
-const COFFEE_IMAGES = [
-  'https://images.unsplash.com/photo-1524350876685-274059332603?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1611070960620-f0e3e2b1d082?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1610632380989-680fe40816c6?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=200&fit=crop',
-  'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=300&h=200&fit=crop',
-];
+type HomeNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'Home'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 export default function HomeScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<HomeNavigationProp>();
   const queryClient = useQueryClient();
   const user = auth.currentUser;
   const name = user?.email ? user.email.split('@')[0] : 'barista';
@@ -127,7 +122,7 @@ export default function HomeScreen() {
     >
       <View style={styles.cardImageWrap}>
         <Image
-          source={{ uri: COFFEE_IMAGES[index % COFFEE_IMAGES.length] }}
+          source={{ uri: CARD_IMAGES[index % CARD_IMAGES.length] }}
           style={styles.cardImage}
         />
         <LinearGradient
@@ -190,7 +185,7 @@ export default function HomeScreen() {
     >
       <View style={styles.cardImageWrap}>
         <Image
-          source={{ uri: CAFE_IMAGES[index % CAFE_IMAGES.length] }}
+          source={{ uri: CARD_IMAGES[index % CARD_IMAGES.length] }}
           style={styles.cardImage}
         />
         <LinearGradient

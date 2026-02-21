@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Animated, View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { Colors, Fonts } from './utils/constants';
 import CoffeeFlower from './components/CoffeeFlower';
 import { AuthNavigator, AppNavigator } from './navigation/AppNavigator';
+import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
 import { useProfileStore } from './store/profileStore';
@@ -16,6 +17,7 @@ export default function App() {
   const { user, initializing, initialize } = useAuthStore();
   const { onboarded, fetchProfile } = useProfileStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [emailVerified, setEmailVerified] = useState(false);
 
   // Initialize Auth
   useEffect(() => {
@@ -23,10 +25,11 @@ export default function App() {
     return unsubscribe;
   }, [initialize]);
 
-  // Sync Profile when user changes
+  // Sync Profile when user changes; sync emailVerified flag
   useEffect(() => {
     if (user) {
       fetchProfile(user.uid);
+      setEmailVerified(user.emailVerified);
     }
   }, [user, fetchProfile]);
 
@@ -55,7 +58,9 @@ export default function App() {
         <Animated.View style={[styles.root, { opacity: fadeAnim }]}>
           <StatusBar style="light" />
           <NavigationContainer>
-            {user ? (
+            {user && !emailVerified ? (
+              <VerifyEmailScreen onVerified={() => setEmailVerified(true)} />
+            ) : user ? (
               <AppNavigator onboarded={onboarded} />
             ) : (
               <AuthNavigator />
