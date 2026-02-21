@@ -25,6 +25,8 @@ export default {
           'Ully uses your camera to scan coffee equipment parts and analyze espresso extractions for dial-in suggestions.',
         NSPhotoLibraryUsageDescription:
           'Ully uses your photo library to upload photos of coffee equipment and espresso extractions for AI analysis.',
+        NSLocationWhenInUseUsageDescription:
+          'Ully uses your location to recommend local cafes, roasteries, and weather-appropriate coffee drinks.',
       },
     },
     android: {
@@ -33,9 +35,11 @@ export default {
         backgroundColor: '#1A1614',
       },
       package: 'com.ullycoffee.app',
-      permissions: ['CAMERA', 'READ_EXTERNAL_STORAGE'],
+      versionCode: 1,
+      permissions: ['CAMERA', 'READ_EXTERNAL_STORAGE', 'ACCESS_COARSE_LOCATION'],
     },
     plugins: [
+      'expo-secure-store',
       'expo-asset',
       'expo-font',
       [
@@ -53,6 +57,13 @@ export default {
         },
       ],
       [
+        'expo-location',
+        {
+          locationWhenInUsePermission:
+            'Ully uses your location to recommend local cafes, roasteries, and weather-appropriate coffee drinks.',
+        },
+      ],
+      [
         'expo-speech-recognition',
         {
           microphonePermission:
@@ -66,7 +77,6 @@ export default {
       eas: {
         projectId: 'baf4d91f-12b9-47cd-b0b4-a01aadd37f08',
       },
-      claudeApiKey: process.env.CLAUDE_API_KEY,
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
       firebaseProjectId: process.env.FIREBASE_PROJECT_ID,

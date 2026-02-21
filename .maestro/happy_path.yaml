@@ -1,0 +1,9 @@
+appId: com.ullycoffee.app
+name: "Happy Path — Login → AI Dial-in → Save Recipe"
+---
+# Runs the three sub-flows in order.
+# Each flow picks up where the previous one left off (app stays running).
+
+- runFlow: flows/01_login.yaml
+- runFlow: flows/02_ai_dialin.yaml
+- runFlow: flows/03_save_recipe.yaml

@@ -1,0 +1,38 @@
+appId: com.ullycoffee.app
+name: "02 - AI Dial-in"
+---
+# ── Navigate to AI tab ────────────────────────────────────────────────────────
+# The bottom tab bar uses icon-only tabs; tap by index or label if present.
+# Adjust the tab label below if your tab navigator exposes one.
+- tapOn:
+    id: "ai-tab"
+    optional: true
+- runFlow:
+    when:
+      notVisible: "Ully AI"
+    flow: |
+      # Fallback: swipe left on tab bar to reach AI tab
+      - swipe:
+          direction: LEFT
+          duration: 300
+
+# ── AI screen ─────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Ully AI"
+    timeout: 5000
+- assertVisible: "your coffee companion"
+
+# ── Dial-in chip ─────────────────────────────────────────────────────────────
+- assertVisible: "Dial-in"
+- tapOn: "Dial-in"
+
+# ── Verify Ully responds ──────────────────────────────────────────────────────
+# After tapping Dial-in a pre-canned message is sent; wait for Ully's reply.
+- assertVisible:
+    text: "Ully"
+    timeout: 15000
+
+# Alternatively assert the loading indicator disappears
+- assertNotVisible:
+    text: "Brewing your answer"
+    timeout: 20000

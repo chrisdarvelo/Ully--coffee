@@ -1,0 +1,127 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Colors, AuthColors, Fonts } from '../utils/constants';
+import { TabIcon } from '../components/NavigationIcons';
+
+// Screens
+import HomeScreen from '../screens/HomeScreen';
+import AIScreen from '../screens/AIScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import RecipeDetailScreen from '../screens/RecipeDetailScreen';
+import BaristaDetailScreen from '../screens/BaristaDetailScreen';
+import CafeDetailScreen from '../screens/CafeDetailScreen';
+import WelcomeScreen from '../screens/WelcomeScreen';
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
+
+export type RootStackParamList = {
+  Welcome: undefined;
+  Login: undefined;
+  SignUp: undefined;
+  PrivacyPolicy: undefined;
+  Onboarding: undefined;
+  Tabs: undefined;
+  RecipeDetail: { recipe?: any; isNew?: boolean };
+  BaristaDetail: { barista: any };
+  CafeDetail: { cafe?: any; isNew?: boolean };
+};
+
+export type TabParamList = {
+  Home: undefined;
+  AI: undefined;
+  Profile: undefined;
+};
+
+const AuthStack = createNativeStackNavigator<RootStackParamList>();
+const AppStack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
+
+export function AuthNavigator() {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: AuthColors.background },
+      }}
+    >
+      <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+      <AuthStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: 'Privacy Policy' }} />
+    </AuthStack.Navigator>
+  );
+}
+
+function TabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarIcon: ({ focused }) => (
+          <TabIcon label={route.name} focused={focused} />
+        ),
+        tabBarStyle: {
+          backgroundColor: Colors.tabBar,
+          borderTopColor: Colors.border,
+          borderTopWidth: 1,
+          paddingTop: 10,
+          height: 80,
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="AI" component={AIScreen} />
+      <Tab.Screen name="Profile" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export function AppNavigator({ onboarded }: { onboarded: boolean }) {
+  return (
+    <AppStack.Navigator
+      initialRouteName={'Tabs'}
+      screenOptions={{
+        headerStyle: { backgroundColor: Colors.background },
+        headerTintColor: Colors.text,
+        headerTitleStyle: { fontWeight: '600', fontFamily: Fonts.mono },
+        contentStyle: { backgroundColor: Colors.background },
+        headerShadowVisible: false,
+      }}
+    >
+      <AppStack.Screen
+        name="Onboarding"
+        component={OnboardingScreen}
+        options={{ headerShown: false }}
+      />
+      <AppStack.Screen
+        name="Tabs"
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
+      <AppStack.Screen
+        name="RecipeDetail"
+        component={RecipeDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <AppStack.Screen
+        name="BaristaDetail"
+        component={BaristaDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <AppStack.Screen
+        name="CafeDetail"
+        component={CafeDetailScreen}
+        options={{ title: 'Cafe' }}
+      />
+      <AppStack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={{ title: 'Privacy Policy' }}
+      />
+    </AppStack.Navigator>
+  );
+}

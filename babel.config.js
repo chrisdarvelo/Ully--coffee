@@ -1,6 +1,17 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: [
+      [
+        'babel-preset-expo',
+        {
+          typescript: { allExtensions: true, isTSX: true },
+        },
+      ],
+      '@babel/preset-flow',
+    ],
+    plugins: [
+      ['@babel/plugin-transform-flow-strip-types', { requireDirective: false }],
+    ],
   };
 };

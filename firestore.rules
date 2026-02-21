@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // ── User Profiles ─────────────────────────────────────────────────────────
+    // Only the owner can read or write their own profile.
+    match /profiles/{userId} {
+      allow read, write: if isSignedIn() && isOwner(userId);
+    }
+
+    // ── Recipes ───────────────────────────────────────────────────────────────
+    // Private to owner. userId field must match the authenticated user.
+    match /recipes/{recipeId} {
+      allow read, update, delete: if isSignedIn() && isOwner(resource.data.userId);
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+    }
+
+    // ── Cafes ─────────────────────────────────────────────────────────────────
+    // Private to owner. Same pattern as recipes.
+    match /cafes/{cafeId} {
+      allow read, update, delete: if isSignedIn() && isOwner(resource.data.userId);
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+    }
+
+    // ── Deny everything else ──────────────────────────────────────────────────
+    // Any collection not explicitly matched above is fully locked.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

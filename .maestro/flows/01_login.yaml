@@ -1,0 +1,28 @@
+appId: com.ullycoffee.app
+name: "01 - Login"
+---
+# ── Launch ────────────────────────────────────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# ── Welcome screen ────────────────────────────────────────────────────────────
+- assertVisible: "Ully Ai"
+- assertVisible: "your coffee companion"
+- tapOn: "Sign In"
+
+# ── Login screen ──────────────────────────────────────────────────────────────
+- assertVisible: "Welcome back to Ully AI"
+- tapOn:
+    text: "Email"
+- inputText: "test@ullycoffee.com"
+
+- tapOn:
+    text: "Password"
+- inputText: "TestPass1"
+
+- tapOn: "Sign In"
+
+# ── Post-login: Home tab should be visible ────────────────────────────────────
+- assertVisible:
+    text: "Your Recipes"
+    timeout: 8000
