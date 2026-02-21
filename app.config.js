@@ -22,6 +22,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.ullycoffee.app',
+      buildNumber: '1',
       infoPlist: {
         NSCameraUsageDescription:
           'Ully uses your camera to scan coffee equipment parts and analyze espresso extractions for dial-in suggestions.',
@@ -39,6 +40,7 @@ export default {
       package: 'com.ullycoffee.app',
       versionCode: 1,
       permissions: ['CAMERA', 'ACCESS_COARSE_LOCATION'],
+      googleServicesFile: './google-services.json',
     },
     plugins: [
       'expo-secure-store',
